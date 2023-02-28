@@ -1,0 +1,8 @@
+default:
+  repositories:
+    - test-repo1
+    - test-repo2
+    - other-repo
+secondary:
+  repositories:
+    - other-repo
