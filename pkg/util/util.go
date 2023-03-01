@@ -39,3 +39,11 @@ func GetFlagString(cmd *cobra.Command, str string) (string, error) {
 	}
 	return val, nil
 }
+
+func GetFlagBool(cmd *cobra.Command, str string) (bool, error) {
+	val, err := cmd.Flags().GetBool(str)
+	if err != nil {
+		return false, err
+	}
+	return val, nil
+}

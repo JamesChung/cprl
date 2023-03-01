@@ -4,8 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	"github.com/JamesChung/cprl/cmd/list/closed"
-	"github.com/JamesChung/cprl/cmd/list/open"
+	"github.com/JamesChung/cprl/cmd/list/pr"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -16,15 +15,13 @@ var (
 	List a resource`)
 
 	example = templates.Examples(`
-	cprl list open
-	cprl list closed
+	cprl list pr
 	`)
 )
 
 func listCommands() []*cobra.Command {
 	return []*cobra.Command{
-		open.NewCmdListOpen(),
-		closed.NewCmdListClosed(),
+		pr.NewCmdListPR(),
 	}
 }
 

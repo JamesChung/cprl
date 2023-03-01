@@ -42,11 +42,13 @@ func NewCmdCreatePR() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	profile, err := config.GetProfileFlag(cmd)
+	profile, err := config.GetProfile(cmd)
 	util.ExitOnErr(err)
 	repos, err := cc.GetRepositories(profile)
 	util.ExitOnErr(err)
-	ccClient, err := client.NewCodeCommitClient(profile)
+	awsProfile, err := config.GetAWSProfile(cmd)
+	util.ExitOnErr(err)
+	ccClient, err := client.NewCodeCommitClient(awsProfile)
 	util.ExitOnErr(err)
 
 	// Select a repository

@@ -44,7 +44,7 @@ func ProfileLookup(profile string) error {
 	return nil
 }
 
-func GetProfileFlag(cmd *cobra.Command) (string, error) {
+func GetProfile(cmd *cobra.Command) (string, error) {
 	str, err := util.GetFlagString(cmd, "profile")
 	if err != nil {
 		return "", err
@@ -52,7 +52,7 @@ func GetProfileFlag(cmd *cobra.Command) (string, error) {
 	return str, nil
 }
 
-func GetAWSProfileFlag(cmd *cobra.Command) (string, error) {
+func GetAWSProfile(cmd *cobra.Command) (string, error) {
 	str, err := util.GetFlagString(cmd, "aws-profile")
 	if err != nil {
 		return "", err
