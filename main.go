@@ -1,19 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/JamesChung/cprl/cmd"
 	"github.com/JamesChung/cprl/internal/config"
+	"github.com/JamesChung/cprl/pkg/util"
 )
 
 func init() {
 	err := config.Read()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		os.Exit(1)
-	}
+	util.ExitOnErr(err)
 }
 
 func main() {

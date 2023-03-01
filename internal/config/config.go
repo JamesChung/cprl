@@ -5,14 +5,11 @@ import (
 	"os"
 	"path"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/JamesChung/cprl/internal/cprlerrs"
+	"github.com/JamesChung/cprl/pkg/util"
 )
-
-type Config struct {
-	Repositories []string
-}
 
 // Read config file cprl.yaml
 func Read() error {
@@ -47,31 +44,18 @@ func ProfileLookup(profile string) error {
 	return nil
 }
 
-func GetRepositoriesConfig(profile string) ([]string, error) {
-	repositories := viper.GetStringSlice(
-		fmt.Sprintf("%s.repositories", profile),
-	)
-	if repositories == nil {
-		return nil, cprlerrs.MissingRepositoriesErr
+func GetProfileFlag(cmd *cobra.Command) (string, error) {
+	str, err := util.GetFlagString(cmd, "profile")
+	if err != nil {
+		return "", err
 	}
-	return repositories, nil
+	return str, nil
 }
 
-func GetConfig(profile string) (*Config, error) {
-	if err := ProfileLookup("default"); err != nil {
-		return nil, cprlerrs.MissingDefaultProfileErr
-	}
-
-	if err := ProfileLookup(profile); err != nil {
-		return nil, err
-	}
-
-	repositories, err := GetRepositoriesConfig(profile)
+func GetAWSProfileFlag(cmd *cobra.Command) (string, error) {
+	str, err := util.GetFlagString(cmd, "aws-profile")
 	if err != nil {
-		return nil, fmt.Errorf("[%s] profile in %w", profile, err)
+		return "", err
 	}
-
-	return &Config{
-		Repositories: repositories,
-	}, nil
+	return str, nil
 }

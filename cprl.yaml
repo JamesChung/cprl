@@ -1,8 +1,12 @@
 default:
-  repositories:
-    - test-repo1
-    - test-repo2
-    - other-repo
+  services:
+    codecommit:
+      repositories:
+        - test-repo1
+        - test-repo2
+        - other-repo
 secondary:
-  repositories:
-    - other-repo
+  services:
+    codecommit:
+      repositories:
+        - other-repo

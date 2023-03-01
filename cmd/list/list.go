@@ -10,7 +10,10 @@ import (
 )
 
 var (
-	shortMessage = "List PRs"
+	shortMessage = "list command"
+
+	longMessage = templates.LongDesc(`
+	List a resource`)
 
 	example = templates.Examples(`
 	cprl list open
@@ -30,6 +33,7 @@ func NewCmdList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"l"},
 		Short:   shortMessage,
+		Long:    longMessage,
 		Example: example,
 	}
 	util.AddGroup(list, "Commands:", listCommands()...)

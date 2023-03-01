@@ -6,7 +6,10 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	inutil "github.com/JamesChung/cprl/internal/util"
+	"github.com/JamesChung/cprl/internal/config"
+	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
+	"github.com/JamesChung/cprl/pkg/client"
+	"github.com/JamesChung/cprl/pkg/service"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -40,7 +43,24 @@ func NewCmdListOpen() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	inutil.Initialize(cmd)
-	prs := inutil.GetPullRequests(cmd, types.PullRequestStatusEnumOpen)
-	util.PRsToTable(prs)
+	profile, err := config.GetProfileFlag(cmd)
+	util.ExitOnErr(err)
+
+	ccClient, err := client.NewCodeCommitClient(profile)
+	util.ExitOnErr(err)
+
+	repos, err := cc.GetRepositories(profile)
+	util.ExitOnErr(err)
+
+	authorARN, err := cc.GetAuthorARNFlag(cmd)
+	util.ExitOnErr(err)
+
+	prs := service.GetPullRequests(
+		service.PullRequestInput{
+			AuthorARN:    authorARN,
+			Client:       ccClient,
+			Repositories: repos,
+			Status:       types.PullRequestStatusEnumOpen,
+		})
+	service.PRsToTable(prs)
 }
