@@ -23,11 +23,11 @@ var (
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	flags.String(
-		"repository",
-		"",
-		"repository name",
-	)
+	// flags.String(
+	// 	"repository",
+	// 	"",
+	// 	"repository name",
+	// )
 }
 
 func NewCmdCreatePR() *cobra.Command {
