@@ -1,10 +1,10 @@
 package util
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +27,7 @@ func Basename(str string) string {
 
 func ExitOnErr(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		pterm.Error.Println(err)
 		os.Exit(1)
 	}
 }

@@ -1,6 +1,7 @@
-package pr
+package list
 
 import (
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -15,10 +16,12 @@ import (
 var (
 	shortMessage = "List PRs"
 
+	longMessage = templates.LongDesc(`
+	List a resource`)
+
 	example = templates.Examples(`
-	cprl list pr
-	cprl list pr --profile=dev
-	cprl list pr --profile=dev --aws-profile=dev-account`)
+	cprl codecommit pr list
+	`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
@@ -35,14 +38,16 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmdListPR() *cobra.Command {
-	openCmd := &cobra.Command{
-		Use:     "pr",
+	list := &cobra.Command{
+		Use:     "list",
+		Aliases: []string{"l"},
 		Short:   shortMessage,
+		Long:    longMessage,
 		Example: example,
 		Run:     runCmd,
 	}
-	setPersistentFlags(openCmd.Flags())
-	return openCmd
+	setPersistentFlags(list.PersistentFlags())
+	return list
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
@@ -64,6 +69,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	status, err := cc.GetClosed(cmd)
 	util.ExitOnErr(err)
 
+	pterm.DefaultSpinner.Start("Getting PRs...")
+	defer pterm.DefaultSpinner.Stop()
 	prs := service.GetPullRequests(
 		service.PullRequestInput{
 			AuthorARN:    authorARN,

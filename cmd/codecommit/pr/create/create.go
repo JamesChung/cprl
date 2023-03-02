@@ -1,6 +1,8 @@
-package pr
+package create
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/pterm/pterm"
@@ -32,7 +34,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 
 func NewCmdCreatePR() *cobra.Command {
 	createPRCmd := &cobra.Command{
-		Use:     "pr",
+		Use:     "create",
 		Short:   shortMessage,
 		Example: example,
 		Run:     runCmd,
@@ -63,7 +65,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	branches, err := ccClient.GetBranches(repo)
 	util.ExitOnErr(err)
 
-	// Select source srcBranch
+	// Select source branch
 	srcBranch, err := pterm.DefaultInteractiveSelect.WithDefaultText(
 		"Select a source branch",
 	).WithOptions(
@@ -98,6 +100,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Create PR
+	pterm.DefaultSpinner.Start("Creating PR...")
+	defer pterm.DefaultSpinner.Stop()
 	targets := []types.Target{
 		{
 			RepositoryName:       aws.String(repo),
@@ -105,6 +109,12 @@ func runCmd(cmd *cobra.Command, args []string) {
 			DestinationReference: aws.String(destBranch),
 		},
 	}
-	_, err = ccClient.CreatePR(targets, title, desc)
+	res, err := ccClient.CreatePR(targets, title, desc)
 	util.ExitOnErr(err)
+	pterm.DefaultSpinner.Success(
+		fmt.Sprintf(
+			"Created PR -> %s\n",
+			aws.ToString(res.PullRequest.PullRequestId),
+		),
+	)
 }

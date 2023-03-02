@@ -19,14 +19,14 @@ type ConfigBody struct {
 func CreateTestConfigFile() {
 	p := ConfigProfiles{
 		Default: ConfigBody{
-			AuthorARN: "arn:aws:sts::596944721148:role/test-role",
+			AuthorARN: "arn:aws:sts::010101010101:role/test-role",
 			Repositories: []string{
 				"first-repo",
 				"second-repo",
 			},
 		},
 		Secondary: ConfigBody{
-			AuthorARN: "arn:aws:sts::596944721148:role/test-role",
+			AuthorARN: "arn:aws:sts::010101010101:role/test-role",
 			Repositories: []string{
 				"second-repo",
 			},

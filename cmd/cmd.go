@@ -4,15 +4,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/JamesChung/cprl/cmd/create"
-	"github.com/JamesChung/cprl/cmd/list"
+	"github.com/JamesChung/cprl/cmd/codecommit"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
 func cprlCommands() []*cobra.Command {
 	return []*cobra.Command{
-		create.NewCmdCreate(),
-		list.NewCmdList(),
+		codecommit.NewCmdCodeCommit(),
 	}
 }
 
@@ -24,17 +22,18 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 	flags.String(
 		"aws-profile",
-		"default",
+		"",
 		"AWS profile",
 	)
 }
 
 func NewCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "cprl",
-		Short: "cprl",
+		Use:     "cprl",
+		Short:   "cprl",
+		Version: "v0.1.0",
 	}
 	setPersistentFlags(rootCmd.PersistentFlags())
-	util.AddGroup(rootCmd, "Commands:", cprlCommands()...)
+	util.AddGroup(rootCmd, "Services:", cprlCommands()...)
 	return rootCmd
 }
