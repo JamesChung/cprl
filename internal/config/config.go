@@ -57,5 +57,22 @@ func GetAWSProfile(cmd *cobra.Command) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return str, nil
+	// If someone set the flag, use it because it takes precedent
+	if str != "" {
+		return str, nil
+	}
+	// Else we will look for the aws-profile in cprl.yaml
+	profile, err := GetProfile(cmd)
+	if err != nil {
+		return "", err
+	}
+	if viper.IsSet(fmt.Sprintf("%s.config.aws-profile", profile)) {
+		return viper.GetString(
+			fmt.Sprintf(
+				"%s.config.aws-profile",
+				profile,
+			),
+		), nil
+	}
+	return "default", nil
 }

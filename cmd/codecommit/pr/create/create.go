@@ -19,9 +19,12 @@ import (
 var (
 	shortMessage = "Create PRs"
 
+	longMessage = templates.LongDesc(`
+	Create a PR`)
+
 	example = templates.Examples(`
-	cprl create pr
-	cprl create pr --aws-profile=dev-account`)
+	cprl codecommit pr create
+	cprl codecommit pr create --aws-profile=dev-account`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
@@ -33,14 +36,16 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmdCreatePR() *cobra.Command {
-	createPRCmd := &cobra.Command{
+	create := &cobra.Command{
 		Use:     "create",
+		Aliases: []string{"c"},
 		Short:   shortMessage,
+		Long:    longMessage,
 		Example: example,
 		Run:     runCmd,
 	}
-	setPersistentFlags(createPRCmd.Flags())
-	return createPRCmd
+	setPersistentFlags(create.Flags())
+	return create
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
@@ -54,67 +59,68 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Select a repository
-	repo, err := pterm.DefaultInteractiveSelect.WithDefaultText(
-		"Select a repository",
-	).WithOptions(
-		repos,
-	).Show()
+	repo, err := pterm.DefaultInteractiveSelect.
+		WithDefaultText("Select a repository").
+		WithOptions(repos).
+		Show()
 	util.ExitOnErr(err)
 
 	// Get branches
-	branches, err := ccClient.GetBranches(repo)
-	util.ExitOnErr(err)
+	var branches []string
+	util.Spinner("Getting branches...", func() {
+		branches, err = ccClient.GetBranches(repo)
+		util.ExitOnErr(err)
+	})
 
 	// Select source branch
-	srcBranch, err := pterm.DefaultInteractiveSelect.WithDefaultText(
-		"Select a source branch",
-	).WithOptions(
-		branches,
-	).Show()
+	srcBranch, err := pterm.DefaultInteractiveSelect.
+		WithDefaultText("Select a source branch").
+		WithOptions(branches).
+		Show()
 	util.ExitOnErr(err)
 
 	// Select destination branch
-	destBranch, err := pterm.DefaultInteractiveSelect.WithDefaultText(
-		"Select a destination branch",
-	).WithOptions(
-		branches,
-	).Show()
+	destBranch, err := pterm.DefaultInteractiveSelect.
+		WithDefaultText("Select a destination branch").
+		WithOptions(branches).
+		Show()
 	util.ExitOnErr(err)
 
 	// Input Title
-	title, err := pterm.DefaultInteractiveTextInput.WithDefaultText(
-		"Input a title").Show()
+	title, err := pterm.DefaultInteractiveTextInput.
+		WithDefaultText("Input a title").
+		Show()
 	util.ExitOnErr(err)
 
 	// Ask for description
-	yes, err := pterm.DefaultInteractiveConfirm.WithDefaultText(
-		"Would you like a description?").Show()
+	yes, err := pterm.DefaultInteractiveConfirm.
+		WithDefaultText("Would you like a description?").
+		Show()
 	util.ExitOnErr(err)
 
 	// Input Description
 	var desc string
 	if yes {
-		desc, err = pterm.DefaultInteractiveTextInput.WithDefaultText(
-			"Input a Description").Show()
+		desc, err = pterm.DefaultInteractiveTextInput.
+			WithDefaultText("Input a Description").
+			Show()
 		util.ExitOnErr(err)
 	}
 
 	// Create PR
-	pterm.DefaultSpinner.Start("Creating PR...")
-	defer pterm.DefaultSpinner.Stop()
-	targets := []types.Target{
-		{
-			RepositoryName:       aws.String(repo),
-			SourceReference:      aws.String(srcBranch),
-			DestinationReference: aws.String(destBranch),
-		},
-	}
-	res, err := ccClient.CreatePR(targets, title, desc)
-	util.ExitOnErr(err)
-	pterm.DefaultSpinner.Success(
-		fmt.Sprintf(
+	util.SpinnerWithStatusMsg("Creating PR...", func() (string, error) {
+		targets := []types.Target{
+			{
+				RepositoryName:       aws.String(repo),
+				SourceReference:      aws.String(srcBranch),
+				DestinationReference: aws.String(destBranch),
+			},
+		}
+		res, err := ccClient.CreatePR(targets, title, desc)
+		util.ExitOnErr(err)
+		return fmt.Sprintf(
 			"Created PR -> %s\n",
 			aws.ToString(res.PullRequest.PullRequestId),
-		),
-	)
+		), nil
+	})
 }

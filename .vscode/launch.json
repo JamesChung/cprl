@@ -17,7 +17,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["list"]
+            "args": ["codecommit", "pr", "list"]
         },
         {
             "name": "Run Open",
@@ -41,7 +41,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["create", "pr"]
+            "args": ["codecommit", "pr", "approve"]
         }
     ]
 }

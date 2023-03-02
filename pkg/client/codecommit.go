@@ -10,7 +10,7 @@ import (
 )
 
 type CodeCommitClient struct {
-	client *codecommit.Client
+	Client *codecommit.Client
 }
 
 func nilOrString(str string) *string {
@@ -24,7 +24,7 @@ func nilOrString(str string) *string {
 func (l *CodeCommitClient) ListPRs(repositoryName, authorArn string, status types.PullRequestStatusEnum) ([]string, error) {
 	ids := []string{}
 	p := codecommit.NewListPullRequestsPaginator(
-		l.client, &codecommit.ListPullRequestsInput{
+		l.Client, &codecommit.ListPullRequestsInput{
 			RepositoryName:    aws.String(repositoryName),
 			AuthorArn:         nilOrString(authorArn),
 			PullRequestStatus: status,
@@ -40,7 +40,7 @@ func (l *CodeCommitClient) ListPRs(repositoryName, authorArn string, status type
 }
 
 func (l *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOutput, error) {
-	pr, err := l.client.GetPullRequest(
+	pr, err := l.Client.GetPullRequest(
 		context.Background(),
 		&codecommit.GetPullRequestInput{
 			PullRequestId: aws.String(prID),
@@ -55,7 +55,7 @@ func (l *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOut
 func (l *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 	branches := []string{}
 	p := codecommit.NewListBranchesPaginator(
-		l.client, &codecommit.ListBranchesInput{
+		l.Client, &codecommit.ListBranchesInput{
 			RepositoryName: aws.String(repoName),
 		})
 	for p.HasMorePages() {
@@ -69,7 +69,7 @@ func (l *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 }
 
 func (l *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) (*codecommit.CreatePullRequestOutput, error) {
-	p, err := l.client.CreatePullRequest(
+	p, err := l.Client.CreatePullRequest(
 		context.Background(), &codecommit.CreatePullRequestInput{
 			Targets:     targets,
 			Title:       aws.String(title),
@@ -100,7 +100,7 @@ func NewCodeCommitClient(profile string) (*CodeCommitClient, error) {
 	}
 
 	l := &CodeCommitClient{
-		client: client,
+		Client: client,
 	}
 
 	return l, nil

@@ -1,6 +1,6 @@
 default:
   config:
-    aws-profile: poo-poo
+    aws-profile: default
   services:
     codecommit:
       repositories:

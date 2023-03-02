@@ -3,7 +3,9 @@ package util
 import (
 	"os"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
@@ -46,4 +48,28 @@ func GetFlagBool(cmd *cobra.Command, str string) (bool, error) {
 		return false, err
 	}
 	return val, nil
+}
+
+func Spinner(startMsg string, closure func()) {
+	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	s.Color("blue", "bold")
+	s.Suffix = pterm.Blue(" ", startMsg)
+	s.Start()
+	closure()
+	s.Stop()
+}
+
+func SpinnerWithStatusMsg(startMsg string, closure func() (string, error)) {
+	var str string
+	var err error
+	Spinner(startMsg, func() { str, err = closure() })
+	switch {
+	case err != nil:
+		pterm.Error.Println(err)
+		return
+	case str != "":
+		pterm.Success.Println(str)
+		return
+	}
+	pterm.Success.Println()
 }
