@@ -53,47 +53,52 @@ func NewCmdListPR() *cobra.Command {
 func runCmd(cmd *cobra.Command, args []string) {
 	profile, err := config.GetProfile(cmd)
 	util.ExitOnErr(err)
-
 	awsProfile, err := config.GetAWSProfile(cmd)
 	util.ExitOnErr(err)
-
 	ccClient, err := client.NewCodeCommitClient(awsProfile)
 	util.ExitOnErr(err)
-
 	repos, err := cc.GetRepositories(profile)
 	util.ExitOnErr(err)
-
 	authorARN, err := cc.GetAuthorARN(cmd)
 	util.ExitOnErr(err)
-
 	status, err := cc.GetClosed(cmd)
 	util.ExitOnErr(err)
 
+	// Get repository query list
+	repoSelections, err := pterm.DefaultInteractiveMultiselect.
+		WithOptions(repos).Show("Select repositories")
+	util.ExitOnErr(err)
+
+	// Get table headers
 	tblSelections, err := pterm.DefaultInteractiveMultiselect.
 		WithOptions([]string{
 			"Repository",
 			"Author",
+			"ID",
 			"Title",
 			"Source",
 			"Destination",
 			"CreationDate",
 			"LastActivityDate",
-		}).Show("Select table header options")
+		}).Show("Select table headers")
 	util.ExitOnErr(err)
 
+	// Get PRs
 	var prs <-chan *codecommit.GetPullRequestOutput
 	util.Spinner("Getting PR IDs...", func() {
 		prs = util.GetPullRequests(
 			util.PullRequestInput{
 				AuthorARN:    authorARN,
 				Client:       ccClient,
-				Repositories: repos,
+				Repositories: repoSelections,
 				Status:       status,
 			})
 	})
+
+	// Get PR data & generate table
 	var tbl *pterm.TablePrinter
 	util.Spinner("Getting PR Information & Generating Table...", func() {
-		tbl = util.PRsToTable(tblSelections, prs)
+		tbl = util.PRsToTable(util.GenerateTableHeaders(tblSelections), prs)
 	})
 	tbl.Render()
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/pterm/pterm"
 	"golang.org/x/exp/slices"
 
+	"github.com/JamesChung/cprl/internal/errs"
 	"github.com/JamesChung/cprl/pkg/client"
 )
 
@@ -36,7 +37,10 @@ func GetPullRequestIDs(input PullRequestInput) <-chan []string {
 			ids, err := input.Client.ListPRs(
 				repo, input.AuthorARN, input.Status,
 			)
-			ExitOnErr(err)
+			if err != nil {
+				errs.ErrorCh <- err
+				return
+			}
 			ch <- ids
 		}(repo)
 	}
@@ -59,7 +63,10 @@ func GetPullRequests(input PullRequestInput) <-chan *codecommit.GetPullRequestOu
 			defer wg.Done()
 			for _, id := range ids {
 				info, err := input.Client.GetPRInfo(id)
-				ExitOnErr(err)
+				if err != nil {
+					errs.ErrorCh <- err
+					return
+				}
 				ch <- info
 			}
 		}(ids)
@@ -67,12 +74,49 @@ func GetPullRequests(input PullRequestInput) <-chan *codecommit.GetPullRequestOu
 	return ch
 }
 
-func GetPullRequestsSlice(input PullRequestInput) []*codecommit.GetPullRequestOutput {
+func GetPullRequestsSlice(input PullRequestInput) ([]*codecommit.GetPullRequestOutput, error) {
 	prs := []*codecommit.GetPullRequestOutput{}
-	for pr := range GetPullRequests(input) {
-		prs = append(prs, pr)
+	prCh := GetPullRequests(input)
+	for {
+		select {
+		case pr, ok := <-prCh:
+			if !ok {
+				return prs, nil
+			}
+			prs = append(prs, pr)
+		case err := <-errs.ErrorCh:
+			return nil, err
+		}
 	}
-	return prs
+}
+
+func GenerateTableHeaders(headers []string) []string {
+	s := make([]string, 0, len(headers))
+	if slices.Contains(headers, "Repository") {
+		s = append(s, "Repository")
+	}
+	if slices.Contains(headers, "Author") {
+		s = append(s, "Author")
+	}
+	if slices.Contains(headers, "ID") {
+		s = append(s, "ID")
+	}
+	if slices.Contains(headers, "Title") {
+		s = append(s, "Title")
+	}
+	if slices.Contains(headers, "Source") {
+		s = append(s, "Source")
+	}
+	if slices.Contains(headers, "Destination") {
+		s = append(s, "Destination")
+	}
+	if slices.Contains(headers, "CreationDate") {
+		s = append(s, "CreationDate")
+	}
+	if slices.Contains(headers, "LastActivityDate") {
+		s = append(s, "LastActivityDate")
+	}
+	return s
 }
 
 func PRsToTable(headers []string, ch <-chan *codecommit.GetPullRequestOutput) *pterm.TablePrinter {
@@ -85,6 +129,9 @@ func PRsToTable(headers []string, ch <-chan *codecommit.GetPullRequestOutput) *p
 			}
 			if slices.Contains(headers, "Author") {
 				row = append(row, Basename(aws.ToString(pr.PullRequest.AuthorArn)))
+			}
+			if slices.Contains(headers, "ID") {
+				row = append(row, Basename(aws.ToString(pr.PullRequest.PullRequestId)))
 			}
 			if slices.Contains(headers, "Title") {
 				row = append(row, aws.ToString(pr.PullRequest.Title))

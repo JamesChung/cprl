@@ -28,11 +28,11 @@ var (
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// flags.String(
-	// 	"repository",
-	// 	"",
-	// 	"repository name",
-	// )
+	flags.String(
+		"repository",
+		"",
+		"repository name override",
+	)
 }
 
 func NewCmdCreatePR() *cobra.Command {
@@ -59,51 +59,49 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Select a repository
-	repo, err := pterm.DefaultInteractiveSelect.
-		WithDefaultText("Select a repository").
-		WithOptions(repos).
-		Show()
+	repo, err := cmd.Flags().GetString("repository")
 	util.ExitOnErr(err)
+	if repo == "" {
+		repo, err = pterm.DefaultInteractiveSelect.
+			WithDefaultText("Select a repository").
+			WithOptions(repos).Show()
+		util.ExitOnErr(err)
+	}
 
 	// Get branches
 	var branches []string
 	util.Spinner("Getting branches...", func() {
 		branches, err = ccClient.GetBranches(repo)
-		util.ExitOnErr(err)
 	})
+	util.ExitOnErr(err)
 
 	// Select source branch
 	srcBranch, err := pterm.DefaultInteractiveSelect.
 		WithDefaultText("Select a source branch").
-		WithOptions(branches).
-		Show()
+		WithOptions(branches).Show()
 	util.ExitOnErr(err)
 
 	// Select destination branch
 	destBranch, err := pterm.DefaultInteractiveSelect.
 		WithDefaultText("Select a destination branch").
-		WithOptions(branches).
-		Show()
+		WithOptions(branches).Show()
 	util.ExitOnErr(err)
 
 	// Input Title
 	title, err := pterm.DefaultInteractiveTextInput.
-		WithDefaultText("Input a title").
-		Show()
+		WithDefaultText("Input a title").Show()
 	util.ExitOnErr(err)
 
 	// Ask for description
 	yes, err := pterm.DefaultInteractiveConfirm.
-		WithDefaultText("Would you like a description?").
-		Show()
+		WithDefaultText("Would you like a description?").Show()
 	util.ExitOnErr(err)
 
 	// Input Description
 	var desc string
 	if yes {
 		desc, err = pterm.DefaultInteractiveTextInput.
-			WithDefaultText("Input a Description").
-			Show()
+			WithDefaultText("Input a Description").Show()
 		util.ExitOnErr(err)
 	}
 
@@ -117,10 +115,15 @@ func runCmd(cmd *cobra.Command, args []string) {
 			},
 		}
 		res, err := ccClient.CreatePR(targets, title, desc)
-		util.ExitOnErr(err)
+		if err != nil {
+			// Return and let outer scope handle error
+			return "", nil
+		}
+
 		return fmt.Sprintf(
 			"Created PR -> %s\n",
 			aws.ToString(res.PullRequest.PullRequestId),
 		), nil
 	})
+	util.ExitOnErr(err)
 }

@@ -23,6 +23,7 @@ func nilOrString(str string) *string {
 // ListPRs returns a list of CodeCommit PR IDs
 func (l *CodeCommitClient) ListPRs(repositoryName, authorArn string, status types.PullRequestStatusEnum) ([]string, error) {
 	ids := []string{}
+	ctx := context.Background()
 	p := codecommit.NewListPullRequestsPaginator(
 		l.Client, &codecommit.ListPullRequestsInput{
 			RepositoryName:    aws.String(repositoryName),
@@ -30,7 +31,7 @@ func (l *CodeCommitClient) ListPRs(repositoryName, authorArn string, status type
 			PullRequestStatus: status,
 		})
 	for p.HasMorePages() {
-		o, err := p.NextPage(context.Background())
+		o, err := p.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -40,9 +41,9 @@ func (l *CodeCommitClient) ListPRs(repositoryName, authorArn string, status type
 }
 
 func (l *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOutput, error) {
+	ctx := context.Background()
 	pr, err := l.Client.GetPullRequest(
-		context.Background(),
-		&codecommit.GetPullRequestInput{
+		ctx, &codecommit.GetPullRequestInput{
 			PullRequestId: aws.String(prID),
 		})
 	if err != nil {
@@ -54,12 +55,13 @@ func (l *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOut
 
 func (l *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 	branches := []string{}
+	ctx := context.Background()
 	p := codecommit.NewListBranchesPaginator(
 		l.Client, &codecommit.ListBranchesInput{
 			RepositoryName: aws.String(repoName),
 		})
 	for p.HasMorePages() {
-		b, err := p.NextPage(context.Background())
+		b, err := p.NextPage(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +71,9 @@ func (l *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 }
 
 func (l *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) (*codecommit.CreatePullRequestOutput, error) {
+	ctx := context.Background()
 	p, err := l.Client.CreatePullRequest(
-		context.Background(), &codecommit.CreatePullRequestInput{
+		ctx, &codecommit.CreatePullRequestInput{
 			Targets:     targets,
 			Title:       aws.String(title),
 			Description: nilOrString(desc),
@@ -82,9 +85,9 @@ func (l *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) 
 }
 
 func newCodeCommitClient(profile string) (*codecommit.Client, error) {
+	ctx := context.Background()
 	cfg, err := config.LoadDefaultConfig(
-		context.Background(),
-		config.WithSharedConfigProfile(profile),
+		ctx, config.WithSharedConfigProfile(profile),
 	)
 	if err != nil {
 		return nil, err

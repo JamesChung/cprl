@@ -71,8 +71,8 @@ github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.23 h1:b/Vn141DBuLVgXbhRW
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.23/go.mod h1:mr6c4cHC+S/MMkrjtSlG4QA36kOznDep+0fga5L/fGQ=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.3.30 h1:IVx9L7YFhpPq0tTnGo8u8TpluFu7nAn9X3sUDMb11c0=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.3.30/go.mod h1:vsbq62AOBwQ1LJ/GWKFxX8beUEYeRp/Agitrxee2/qM=
-github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.5 h1:PC2N3ECj8yrEpWw7Q5xZ6KFIsWzKb4zmmOe8+B+brYw=
-github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.5/go.mod h1:CXdeWGKCX/uNXBsZgArI4FQmMz66FlyLq0MV9QjVv7w=
+github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.6 h1:+f9lZhXyGlxX4HUSPhvfW4YA2/dosFAaCtvnbIzZ6TU=
+github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.6/go.mod h1:CXdeWGKCX/uNXBsZgArI4FQmMz66FlyLq0MV9QjVv7w=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.23 h1:QoOybhwRfciWUBbZ0gp9S7XaDnCuSTeK/fySB99V1ls=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.23/go.mod h1:9uPh+Hrz2Vn6oMnQYiUi/zbh3ovbnQk19YKINkQny44=
 github.com/aws/aws-sdk-go-v2/service/sso v1.12.4 h1:qJdM48OOLl1FBSzI7ZrA1ZfLwOyCYqkXV5lko1hYDBw=
