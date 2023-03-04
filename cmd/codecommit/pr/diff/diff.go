@@ -3,18 +3,19 @@ package diff
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/pterm/pterm"
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
 	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
+	"github.com/JamesChung/cprl/internal/diff"
 	"github.com/JamesChung/cprl/pkg/client"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -119,27 +120,51 @@ func runCmd(cmd *cobra.Command, args []string) {
 	})
 	util.ExitOnErr(err)
 
-	for _, do := range diffOut {
-		for _, d := range do.Differences {
-			pterm.Info.Println(d.ChangeType, aws.ToString(d.BeforeBlob.Path))
-			pterm.Println("-----------------------------------")
-			bob, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
-				BlobId:         d.BeforeBlob.BlobId,
-				RepositoryName: aws.String(repo),
-			})
-			util.ExitOnErr(err)
-			boa, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
-				BlobId:         d.AfterBlob.BlobId,
-				RepositoryName: aws.String(repo),
-			})
-			util.ExitOnErr(err)
-			dmp := diffmatchpatch.New()
-			diffs := dmp.DiffMain(
-				string(bob.Content),
-				string(boa.Content),
-				false,
-			)
-			cmd.Println(dmp.DiffPrettyText(diffs))
+	var diffResult []byte
+	util.Spinner("Generating Differences...", func() {
+		for _, do := range diffOut {
+			for _, d := range do.Differences {
+				bob, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
+					BlobId:         d.BeforeBlob.BlobId,
+					RepositoryName: aws.String(repo),
+				})
+				// Let outer scope handle error
+				if err != nil {
+					return
+				}
+				boa, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
+					BlobId:         d.AfterBlob.BlobId,
+					RepositoryName: aws.String(repo),
+				})
+				if err != nil {
+					// Let outer scope handle error
+					return
+				}
+				diffResult = diff.Diff(
+					aws.ToString(d.BeforeBlob.Path),
+					bob.Content, aws.ToString(d.AfterBlob.Path),
+					boa.Content,
+				)
+			}
 		}
+	})
+	util.ExitOnErr(err)
+
+	// Prompt user if they want a diff file
+	ds, err := pterm.DefaultInteractiveConfirm.Show("Would you like to output the diff to a file?")
+	util.ExitOnErr(err)
+	// Print diff and exit early if user doesn't want a diff file
+	if !ds {
+		cmd.Println(string(diffResult))
+		return
 	}
+	// Prompt user for the name of the diff file
+	dFileName, err := pterm.DefaultInteractiveTextInput.Show("Submit name of diff file")
+	util.ExitOnErr(err)
+	// Create diff file
+	f, err := os.Create(dFileName)
+	util.ExitOnErr(err)
+	defer f.Close()
+	// Write diff to file
+	f.Write(diffResult)
 }

@@ -18,12 +18,12 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	flags.String(
 		"profile",
 		"default",
-		"profile name in cprl.yaml",
+		"references a profile in cprl.yaml",
 	)
 	flags.String(
 		"aws-profile",
 		"",
-		"AWS profile",
+		"overrides [aws-profile] value in cprl.yaml",
 	)
 }
 

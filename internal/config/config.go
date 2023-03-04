@@ -5,8 +5,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -34,6 +36,78 @@ func Read() error {
 	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}
+	return nil
+}
+
+type ConfigFile struct {
+	Default ProfileBody `yaml:"default"`
+}
+
+type ProfileBody struct {
+	Config   ProfileConfig   `yaml:"config"`
+	Services ProfileServices `yaml:"services"`
+}
+
+type ProfileConfig struct {
+	AWSProfile string `yaml:"aws-profile"`
+}
+
+type ProfileServices struct {
+	CodeCommit ProfileServicesCodeCommit `yaml:"codecommit"`
+}
+
+type ProfileServicesCodeCommit struct {
+	Repositories []string `yaml:"repositories"`
+}
+
+func Create() error {
+	msg := "Would you like to create a cprl.yaml config file?"
+	yes, err := pterm.DefaultInteractiveConfirm.Show(msg)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return nil
+	}
+	cfg := ConfigFile{
+		ProfileBody{
+			Config: ProfileConfig{
+				AWSProfile: "default",
+			},
+			Services: ProfileServices{
+				CodeCommit: ProfileServicesCodeCommit{
+					Repositories: []string{},
+				},
+			},
+		},
+	}
+	yml, err := yaml.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	// Check if cprl config directory exists
+	_, err = os.ReadDir(path.Join(homeDir, ".config/cprl"))
+	if err != nil {
+		if os.IsNotExist(err) {
+			// If cprl config directory doesn't exist then create it
+			err := os.Mkdir(path.Join(homeDir, ".config/cprl"), 0755)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// Create new cprl config file
+	f, err := os.Create(path.Join(homeDir, ".config/cprl/cprl.yaml"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	f.Write(yml)
+	pterm.Success.Println("Created at", f.Name())
 	return nil
 }
 
