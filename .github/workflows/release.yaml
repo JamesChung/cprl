@@ -8,3 +8,13 @@ on:
       - '.github/**'
       - '.vscode/**'
       - '.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.20.1'
+      - run: go build
