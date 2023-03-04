@@ -1,9 +1,7 @@
-name: cprl release
+name: cprl build
 
 on:
   push:
-    branches:
-      - main
     paths-ignore:
       - '.github/**'
       - '.vscode/**'
