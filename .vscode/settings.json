@@ -4,10 +4,12 @@
         "cmds",
         "cmdutil",
         "cprl",
+        "diffmatchpatch",
         "Errln",
         "pflag",
         "pterm",
         "rodaine",
+        "sergi",
         "spnr"
     ]
 }

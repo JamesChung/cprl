@@ -21,11 +21,7 @@ var (
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// flags.String(
-	// 	"repository",
-	// 	"",
-	// 	"repository name",
-	// )
+	// TODO
 }
 
 func prCommands() []*cobra.Command {

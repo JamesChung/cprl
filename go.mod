@@ -8,10 +8,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.6
 	github.com/briandowns/spinner v1.22.0
 	github.com/pterm/pterm v0.12.54
+	github.com/sergi/go-diff v1.3.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
-	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2
+	golang.org/x/exp v0.0.0-20230303215020-44a13b063f3e
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/kubectl v0.26.2
 )

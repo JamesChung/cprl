@@ -31,7 +31,7 @@ func NewCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "cprl",
 		Short:   "cprl",
-		Version: "v0.1.0",
+		Version: "v0.0.0-alpha",
 	}
 	setPersistentFlags(rootCmd.PersistentFlags())
 	util.AddGroup(rootCmd, "Services:", cprlCommands()...)

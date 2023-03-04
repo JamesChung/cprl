@@ -80,7 +80,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PRs for a given repository
 	var prs []*codecommit.GetPullRequestOutput
 	util.Spinner("Retrieving PRs...", func() {
-		prs, err = util.GetPullRequestsSlice(util.PullRequestInput{
+		prs, err = util.GetPullRequests(util.PullRequestInput{
 			Client:       ccClient,
 			AuthorARN:    authorARN,
 			Repositories: []string{repo},

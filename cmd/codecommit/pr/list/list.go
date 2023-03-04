@@ -83,10 +83,10 @@ func runCmd(cmd *cobra.Command, args []string) {
 		}).Show("Select table headers")
 	util.ExitOnErr(err)
 
-	// Get PRs
-	var prs <-chan *codecommit.GetPullRequestOutput
+	// Get PR IDs
+	var prIDs [][]string
 	util.Spinner("Getting PR IDs...", func() {
-		prs = util.GetPullRequests(
+		prIDs, err = util.GetPullRequestIDs(
 			util.PullRequestInput{
 				AuthorARN:    authorARN,
 				Client:       ccClient,
@@ -95,10 +95,16 @@ func runCmd(cmd *cobra.Command, args []string) {
 			})
 	})
 
-	// Get PR data & generate table
+	// Get PR information
+	var prInfoList []*codecommit.GetPullRequestOutput
+	util.Spinner("Getting PR Information...", func() {
+		prInfoList, err = util.GetPullRequestInfoFromIDs(ccClient, prIDs)
+	})
+
+	// Generate table
 	var tbl *pterm.TablePrinter
-	util.Spinner("Getting PR Information & Generating Table...", func() {
-		tbl = util.PRsToTable(util.GenerateTableHeaders(tblSelections), prs)
+	util.Spinner("Generating Table...", func() {
+		tbl = util.PRsToTable(util.GenerateTableHeaders(tblSelections), prInfoList)
 	})
 	tbl.Render()
 }

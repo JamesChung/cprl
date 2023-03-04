@@ -10,7 +10,6 @@ import (
 	"github.com/pterm/pterm"
 	"golang.org/x/exp/slices"
 
-	"github.com/JamesChung/cprl/internal/errs"
 	"github.com/JamesChung/cprl/pkg/client"
 )
 
@@ -21,15 +20,13 @@ type PullRequestInput struct {
 	Status       types.PullRequestStatusEnum
 }
 
-func GetPullRequestIDs(input PullRequestInput) <-chan []string {
+func GetPullRequestIDs(input PullRequestInput) ([][]string, error) {
+	type result struct {
+		IDs   []string
+		Error error
+	}
+	ch := make(chan result, 10)
 	wg := sync.WaitGroup{}
-	ch := make(chan []string, 10)
-	defer func() {
-		go func() {
-			defer close(ch)
-			wg.Wait()
-		}()
-	}()
 	for _, repo := range input.Repositories {
 		wg.Add(1)
 		go func(repo string) {
@@ -38,56 +35,72 @@ func GetPullRequestIDs(input PullRequestInput) <-chan []string {
 				repo, input.AuthorARN, input.Status,
 			)
 			if err != nil {
-				errs.ErrorCh <- err
+				ch <- result{nil, err}
 				return
 			}
-			ch <- ids
+			ch <- result{ids, nil}
 		}(repo)
 	}
-	return ch
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+	response := make([][]string, 0, len(input.Repositories))
+	for ids := range ch {
+		if ids.Error != nil {
+			return nil, ids.Error
+		}
+		response = append(response, ids.IDs)
+	}
+	return response, nil
 }
 
-func GetPullRequests(input PullRequestInput) <-chan *codecommit.GetPullRequestOutput {
-	chIDs := GetPullRequestIDs(input)
+func GetPullRequestInfoFromIDs(ccClient *client.CodeCommitClient, input [][]string) ([]*codecommit.GetPullRequestOutput, error) {
+	type result struct {
+		PRInfo *codecommit.GetPullRequestOutput
+		Error  error
+	}
+	ch := make(chan result, 10)
 	wg := sync.WaitGroup{}
-	ch := make(chan *codecommit.GetPullRequestOutput, 10)
-	defer func() {
-		go func() {
-			defer close(ch)
-			wg.Wait()
-		}()
-	}()
-	for ids := range chIDs {
+	for _, ids := range input {
 		wg.Add(1)
 		go func(ids []string) {
 			defer wg.Done()
 			for _, id := range ids {
-				info, err := input.Client.GetPRInfo(id)
+				info, err := ccClient.GetPRInfo(id)
 				if err != nil {
-					errs.ErrorCh <- err
+					ch <- result{nil, err}
 					return
 				}
-				ch <- info
+				ch <- result{info, nil}
 			}
 		}(ids)
 	}
-	return ch
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+	prList := make([]*codecommit.GetPullRequestOutput, 0)
+	for r := range ch {
+		if r.Error != nil {
+			return nil, r.Error
+		}
+		prList = append(prList, r.PRInfo)
+	}
+	return prList, nil
 }
 
-func GetPullRequestsSlice(input PullRequestInput) ([]*codecommit.GetPullRequestOutput, error) {
-	prs := []*codecommit.GetPullRequestOutput{}
-	prCh := GetPullRequests(input)
-	for {
-		select {
-		case pr, ok := <-prCh:
-			if !ok {
-				return prs, nil
-			}
-			prs = append(prs, pr)
-		case err := <-errs.ErrorCh:
-			return nil, err
-		}
+// GetPullRequests combines GetPullRequestIDs & GetPullRequestInfoFromIDs into one call
+func GetPullRequests(input PullRequestInput) ([]*codecommit.GetPullRequestOutput, error) {
+	ids, err := GetPullRequestIDs(input)
+	if err != nil {
+		return nil, err
 	}
+	prInfoList, err := GetPullRequestInfoFromIDs(input.Client, ids)
+	if err != nil {
+		return nil, err
+	}
+	return prInfoList, err
 }
 
 func GenerateTableHeaders(headers []string) []string {
@@ -119,9 +132,9 @@ func GenerateTableHeaders(headers []string) []string {
 	return s
 }
 
-func PRsToTable(headers []string, ch <-chan *codecommit.GetPullRequestOutput) *pterm.TablePrinter {
+func PRsToTable(headers []string, prList []*codecommit.GetPullRequestOutput) *pterm.TablePrinter {
 	data := pterm.TableData{headers}
-	for pr := range ch {
+	for _, pr := range prList {
 		for _, t := range pr.PullRequest.PullRequestTargets {
 			row := make([]string, 0, len(headers))
 			if slices.Contains(headers, "Repository") {

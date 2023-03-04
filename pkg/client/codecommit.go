@@ -84,6 +84,25 @@ func (l *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) 
 	return p, nil
 }
 
+func (l *CodeCommitClient) GetDifferences(repositoryName, beforeCommitSpecifier, afterCommitSpecifier *string) ([]*codecommit.GetDifferencesOutput, error) {
+	ctx := context.Background()
+	diffs := make([]*codecommit.GetDifferencesOutput, 0)
+	p := codecommit.NewGetDifferencesPaginator(l.Client,
+		&codecommit.GetDifferencesInput{
+			RepositoryName:        repositoryName,
+			BeforeCommitSpecifier: beforeCommitSpecifier,
+			AfterCommitSpecifier:  afterCommitSpecifier,
+		})
+	for p.HasMorePages() {
+		o, err := p.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+		diffs = append(diffs, o)
+	}
+	return diffs, nil
+}
+
 func newCodeCommitClient(profile string) (*codecommit.Client, error) {
 	ctx := context.Background()
 	cfg, err := config.LoadDefaultConfig(
