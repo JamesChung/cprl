@@ -5,12 +5,14 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/JamesChung/cprl/cmd/codecommit"
+	"github.com/JamesChung/cprl/cmd/console"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
 func cprlCommands() []*cobra.Command {
 	return []*cobra.Command{
 		codecommit.NewCmdCodeCommit(),
+		console.NewCmdConsole(),
 	}
 }
 
