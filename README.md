@@ -1,5 +1,7 @@
 # cprl
 
+# [WARNING] In Early Development
+
 ## Config File
 
 `cprl` will first search for a `cprl.yaml` file in the current working directory. If not found it will search in the user's home `.config/` directory as `.config/cprl/cprl.yaml`. If neither is found `cprl` will prompt you if you'd like it to create a `cprl.yaml` file for you with a template. You will still need to provide it your preferred values after creation.
