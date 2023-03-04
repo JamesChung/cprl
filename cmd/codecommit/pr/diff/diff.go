@@ -1,6 +1,7 @@
 package diff
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -69,6 +70,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	authorARN, err := cc.GetAuthorARN(cmd)
 	util.ExitOnErr(err)
 
+	ctx := context.Background()
+
 	// Select a repository
 	repo, err := cmd.Flags().GetString("repository")
 	util.ExitOnErr(err)
@@ -113,38 +116,59 @@ func runCmd(cmd *cobra.Command, args []string) {
 		for _, t := range prMap[prSelection].PullRequest.PullRequestTargets {
 			diffOut, err = ccClient.GetDifferences(
 				aws.String(repo),
-				t.SourceReference,
 				t.DestinationReference,
+				t.SourceReference,
 			)
 		}
 	})
 	util.ExitOnErr(err)
 
-	var diffResult []byte
+	diffResults := make([][]byte, 0)
 	util.Spinner("Generating Differences...", func() {
 		for _, do := range diffOut {
 			for _, d := range do.Differences {
-				bob, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
-					BlobId:         d.BeforeBlob.BlobId,
-					RepositoryName: aws.String(repo),
-				})
-				// Let outer scope handle error
-				if err != nil {
-					return
-				}
-				boa, err := ccClient.Client.GetBlob(context.TODO(), &codecommit.GetBlobInput{
-					BlobId:         d.AfterBlob.BlobId,
-					RepositoryName: aws.String(repo),
-				})
-				if err != nil {
+				switch d.ChangeType {
+				case types.ChangeTypeEnumModified, types.ChangeTypeEnumDeleted:
+					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.BeforeBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
 					// Let outer scope handle error
-					return
+					if err != nil {
+						return
+					}
+					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.AfterBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						// Let outer scope handle error
+						return
+					}
+					diffResult := diff.Diff(
+						aws.ToString(d.BeforeBlob.Path),
+						bob.Content,
+						aws.ToString(d.AfterBlob.Path),
+						boa.Content,
+					)
+					diffResults = append(diffResults, diffResult)
+				case types.ChangeTypeEnumAdded:
+					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.AfterBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						// Let outer scope handle error
+						return
+					}
+					diffResult := diff.Diff(
+						aws.ToString(d.AfterBlob.Path),
+						[]byte{},
+						aws.ToString(d.AfterBlob.Path),
+						boa.Content,
+					)
+					diffResults = append(diffResults, diffResult)
 				}
-				diffResult = diff.Diff(
-					aws.ToString(d.BeforeBlob.Path),
-					bob.Content, aws.ToString(d.AfterBlob.Path),
-					boa.Content,
-				)
 			}
 		}
 	})
@@ -155,7 +179,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 	// Print diff and exit early if user doesn't want a diff file
 	if !ds {
-		cmd.Println(string(diffResult))
+		for _, d := range diffResults {
+			cmd.Println(string(d))
+		}
 		return
 	}
 	// Prompt user for the name of the diff file
@@ -165,6 +191,10 @@ func runCmd(cmd *cobra.Command, args []string) {
 	f, err := os.Create(dFileName)
 	util.ExitOnErr(err)
 	defer f.Close()
+	buf := bytes.Buffer{}
+	for _, res := range diffResults {
+		buf.Write(res)
+	}
 	// Write diff to file
-	f.Write(diffResult)
+	f.Write(buf.Bytes())
 }
