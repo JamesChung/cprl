@@ -15,6 +15,12 @@ type Result[T any] struct {
 	Err    error
 }
 
+type ResultMap[T any, K comparable, V any] struct {
+	Result T
+	Err    error
+	Map    map[K]V
+}
+
 func AddGroup(parent *cobra.Command, title string, cmds ...*cobra.Command) {
 	group := &cobra.Group{
 		Title: title,

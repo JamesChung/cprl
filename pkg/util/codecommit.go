@@ -207,7 +207,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 			go func(d types.Difference) {
 				defer wg.Done()
 				switch d.ChangeType {
-				case types.ChangeTypeEnumModified, types.ChangeTypeEnumDeleted:
+				case types.ChangeTypeEnumModified:
 					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
 						BlobId:         d.BeforeBlob.BlobId,
 						RepositoryName: aws.String(repo),
@@ -245,6 +245,22 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 						[]byte{},
 						aws.ToString(d.AfterBlob.Path),
 						boa.Content,
+					)
+					ch <- Result[[]byte]{diffResult, nil}
+				case types.ChangeTypeEnumDeleted:
+					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.BeforeBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
+						return
+					}
+					diffResult := diff.Diff(
+						aws.ToString(d.BeforeBlob.Path),
+						bob.Content,
+						aws.ToString(d.BeforeBlob.Path),
+						[]byte{},
 					)
 					ch <- Result[[]byte]{diffResult, nil}
 				}
