@@ -120,6 +120,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 		pterm.Success.Printf("Successfully approved PR [%s]\n", r.Result)
 	}
 	if errCount > 0 {
-		util.ExitOnErr(fmt.Errorf("%d PRs have failed to be approved\n", errCount))
+		util.ExitOnErr(fmt.Errorf("%d PRs failed to be approved\n", errCount))
 	}
 }
