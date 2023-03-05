@@ -159,7 +159,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// End if there are no errors
-	if len(rawResults) == 0 {
+	if len(badResults) == 0 {
 		return
 	}
 
