@@ -1,7 +1,6 @@
 package approve
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -107,21 +106,20 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Approve PRs
-	util.SpinnerWithStatusMsg("Approving...", func() (string, error) {
-		ctx := context.Background()
-		for _, v := range prSelections {
-			_, err = ccClient.Client.UpdatePullRequestApprovalState(
-				ctx, &codecommit.UpdatePullRequestApprovalStateInput{
-					ApprovalState: types.ApprovalStateApprove,
-					PullRequestId: prMap[v].PullRequest.PullRequestId,
-					RevisionId:    prMap[v].PullRequest.RevisionId,
-				})
-			if err != nil {
-				// Return and let outer scope handle error
-				return "", nil
-			}
-		}
-		return "Successfully approved!", nil
+	var res []util.Result[string]
+	util.Spinner("Approving...", func() {
+		res = util.ApprovePRs(ccClient, prMap, prSelections)
 	})
-	util.ExitOnErr(err)
+	errCount := 0
+	for _, r := range res {
+		if r.Err != nil {
+			pterm.Error.Printf("Failed to approve PR [%s]: %s\n", r.Result, r.Err)
+			errCount++
+			continue
+		}
+		pterm.Success.Printf("Successfully approved PR [%s]\n", r.Result)
+	}
+	if errCount > 0 {
+		util.ExitOnErr(fmt.Errorf("%d PRs have failed to be approved\n", errCount))
+	}
 }

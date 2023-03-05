@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -21,11 +22,7 @@ type PullRequestInput struct {
 }
 
 func GetPullRequestIDs(input PullRequestInput) ([][]string, error) {
-	type result struct {
-		IDs   []string
-		Error error
-	}
-	ch := make(chan result, 10)
+	ch := make(chan Result[[]string], 10)
 	wg := sync.WaitGroup{}
 	for _, repo := range input.Repositories {
 		wg.Add(1)
@@ -35,10 +32,10 @@ func GetPullRequestIDs(input PullRequestInput) ([][]string, error) {
 				repo, input.AuthorARN, input.Status,
 			)
 			if err != nil {
-				ch <- result{nil, err}
+				ch <- Result[[]string]{nil, err}
 				return
 			}
-			ch <- result{ids, nil}
+			ch <- Result[[]string]{ids, nil}
 		}(repo)
 	}
 	go func() {
@@ -47,20 +44,16 @@ func GetPullRequestIDs(input PullRequestInput) ([][]string, error) {
 	}()
 	response := make([][]string, 0, len(input.Repositories))
 	for ids := range ch {
-		if ids.Error != nil {
-			return nil, ids.Error
+		if ids.Err != nil {
+			return nil, ids.Err
 		}
-		response = append(response, ids.IDs)
+		response = append(response, ids.Result)
 	}
 	return response, nil
 }
 
 func GetPullRequestInfoFromIDs(ccClient *client.CodeCommitClient, input [][]string) ([]*codecommit.GetPullRequestOutput, error) {
-	type result struct {
-		PRInfo *codecommit.GetPullRequestOutput
-		Error  error
-	}
-	ch := make(chan result, 10)
+	ch := make(chan Result[*codecommit.GetPullRequestOutput], 10)
 	wg := sync.WaitGroup{}
 	for _, ids := range input {
 		wg.Add(1)
@@ -69,10 +62,10 @@ func GetPullRequestInfoFromIDs(ccClient *client.CodeCommitClient, input [][]stri
 			for _, id := range ids {
 				info, err := ccClient.GetPRInfo(id)
 				if err != nil {
-					ch <- result{nil, err}
+					ch <- Result[*codecommit.GetPullRequestOutput]{nil, err}
 					return
 				}
-				ch <- result{info, nil}
+				ch <- Result[*codecommit.GetPullRequestOutput]{info, nil}
 			}
 		}(ids)
 	}
@@ -82,10 +75,10 @@ func GetPullRequestInfoFromIDs(ccClient *client.CodeCommitClient, input [][]stri
 	}()
 	prList := make([]*codecommit.GetPullRequestOutput, 0)
 	for r := range ch {
-		if r.Error != nil {
-			return nil, r.Error
+		if r.Err != nil {
+			return nil, r.Err
 		}
-		prList = append(prList, r.PRInfo)
+		prList = append(prList, r.Result)
 	}
 	return prList, nil
 }
@@ -166,4 +159,38 @@ func PRsToTable(headers []string, prList []*codecommit.GetPullRequestOutput) *pt
 	}
 
 	return pterm.DefaultTable.WithHasHeader().WithData(data)
+}
+
+type PRMap map[string]*codecommit.GetPullRequestOutput
+
+func ApprovePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []string) []Result[string] {
+	ctx := context.Background()
+	wg := sync.WaitGroup{}
+	ch := make(chan Result[string], 10)
+	for _, v := range prSelections {
+		wg.Add(1)
+		go func(v string) {
+			defer wg.Done()
+			_, err := ccClient.Client.UpdatePullRequestApprovalState(
+				ctx, &codecommit.UpdatePullRequestApprovalStateInput{
+					ApprovalState: types.ApprovalStateApprove,
+					PullRequestId: prMap[v].PullRequest.PullRequestId,
+					RevisionId:    prMap[v].PullRequest.RevisionId,
+				})
+			if err != nil {
+				ch <- Result[string]{v, err}
+				return
+			}
+			ch <- Result[string]{v, nil}
+		}(v)
+	}
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+	results := make([]Result[string], 0)
+	for res := range ch {
+		results = append(results, res)
+	}
+	return results
 }

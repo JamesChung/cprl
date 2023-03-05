@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type Result[T any] struct {
+	Result T
+	Err    error
+}
+
 func AddGroup(parent *cobra.Command, title string, cmds ...*cobra.Command) {
 	group := &cobra.Group{
 		Title: title,
