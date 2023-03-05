@@ -2,7 +2,6 @@ package diff
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"os"
 
@@ -16,7 +15,6 @@ import (
 
 	"github.com/JamesChung/cprl/internal/config"
 	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
-	"github.com/JamesChung/cprl/internal/diff"
 	"github.com/JamesChung/cprl/pkg/client"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -70,8 +68,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 	authorARN, err := cc.GetAuthorARN(cmd)
 	util.ExitOnErr(err)
 
-	ctx := context.Background()
-
 	// Select a repository
 	repo, err := cmd.Flags().GetString("repository")
 	util.ExitOnErr(err)
@@ -111,6 +107,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		WithOptions(li).Show("Select PR to diff")
 	util.ExitOnErr(err)
 
+	// Get diff metadata info between targets from CodeCommit
 	var diffOut []*codecommit.GetDifferencesOutput
 	util.Spinner("Getting Differences...", func() {
 		for _, t := range prMap[prSelection].PullRequest.PullRequestTargets {
@@ -123,78 +120,77 @@ func runCmd(cmd *cobra.Command, args []string) {
 	})
 	util.ExitOnErr(err)
 
-	diffResults := make([][]byte, 0)
+	// Concurrently generate individual file diffs and consolidate them into a Result list
+	var diffResults, badResults, rawResults []util.Result[[]byte]
 	util.Spinner("Generating Differences...", func() {
-		for _, do := range diffOut {
-			for _, d := range do.Differences {
-				switch d.ChangeType {
-				case types.ChangeTypeEnumModified, types.ChangeTypeEnumDeleted:
-					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
-						BlobId:         d.BeforeBlob.BlobId,
-						RepositoryName: aws.String(repo),
-					})
-					// Let outer scope handle error
-					if err != nil {
-						return
-					}
-					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
-						BlobId:         d.AfterBlob.BlobId,
-						RepositoryName: aws.String(repo),
-					})
-					if err != nil {
-						// Let outer scope handle error
-						return
-					}
-					diffResult := diff.Diff(
-						aws.ToString(d.BeforeBlob.Path),
-						bob.Content,
-						aws.ToString(d.AfterBlob.Path),
-						boa.Content,
-					)
-					diffResults = append(diffResults, diffResult)
-				case types.ChangeTypeEnumAdded:
-					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
-						BlobId:         d.AfterBlob.BlobId,
-						RepositoryName: aws.String(repo),
-					})
-					if err != nil {
-						// Let outer scope handle error
-						return
-					}
-					diffResult := diff.Diff(
-						aws.ToString(d.AfterBlob.Path),
-						[]byte{},
-						aws.ToString(d.AfterBlob.Path),
-						boa.Content,
-					)
-					diffResults = append(diffResults, diffResult)
-				}
-			}
-		}
+		rawResults = util.GenerateDiffs(ccClient, repo, diffOut)
 	})
-	util.ExitOnErr(err)
 
-	// Prompt user if they want a diff file
-	ds, err := pterm.DefaultInteractiveConfirm.Show("Would you like to output the diff to a file?")
-	util.ExitOnErr(err)
-	// Print diff and exit early if user doesn't want a diff file
-	if !ds {
-		for _, d := range diffResults {
-			cmd.Println(string(d))
+	// Filter results for errors
+	for _, res := range rawResults {
+		if res.Err != nil {
+			badResults = append(badResults, res)
 		}
-		return
+		diffResults = append(diffResults, res)
 	}
+
 	// Prompt user for the name of the diff file
 	dFileName, err := pterm.DefaultInteractiveTextInput.Show("Submit name of diff file")
 	util.ExitOnErr(err)
+
 	// Create diff file
 	f, err := os.Create(dFileName)
 	util.ExitOnErr(err)
 	defer f.Close()
+
+	// Use a bytes buffer to write the complete diff file from individual file diff bytes
 	buf := bytes.Buffer{}
 	for _, res := range diffResults {
-		buf.Write(res)
+		_, err = buf.Write(res.Result)
+		if err != nil {
+			util.ExitOnErr(err)
+		}
 	}
+
 	// Write diff to file
-	f.Write(buf.Bytes())
+	_, err = f.Write(buf.Bytes())
+	if err != nil {
+		util.ExitOnErr(err)
+	}
+
+	// End if there are no errors
+	if len(rawResults) == 0 {
+		return
+	}
+
+	// Notify user errors have occurred, prompt if they would like a report
+	errReport, err := pterm.DefaultInteractiveConfirm.Show("There were some errors would you like a report?")
+	if err != nil {
+		util.ExitOnErr(err)
+	}
+
+	// End if the user would not like an error report
+	if !errReport {
+		return
+	}
+
+	// Prompt user for error log file name
+	errFileName, err := pterm.DefaultInteractiveTextInput.Show("Submit name of error log file")
+	if err != nil {
+		util.ExitOnErr(err)
+	}
+
+	// Create error log file
+	e, err := os.Create(errFileName)
+	util.ExitOnErr(err)
+	defer e.Close()
+
+	errBuf := bytes.Buffer{}
+	for _, res := range badResults {
+		res.Result = append(res.Result, []byte(fmt.Sprintf(":\n%s\n\n", res.Err.Error()))...)
+		errBuf.Write(res.Result)
+	}
+
+	// Write errors to file
+	e.Write(errBuf.Bytes())
 }

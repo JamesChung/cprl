@@ -11,6 +11,7 @@ import (
 	"github.com/pterm/pterm"
 	"golang.org/x/exp/slices"
 
+	"github.com/JamesChung/cprl/internal/diff"
 	"github.com/JamesChung/cprl/pkg/client"
 )
 
@@ -193,4 +194,69 @@ func ApprovePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []s
 		results = append(results, res)
 	}
 	return results
+}
+
+func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) []Result[[]byte] {
+	ctx := context.Background()
+	diffResults := make([]Result[[]byte], 0)
+	wg := sync.WaitGroup{}
+	ch := make(chan Result[[]byte], 10)
+	for _, do := range diffOut {
+		for _, d := range do.Differences {
+			wg.Add(1)
+			go func(d types.Difference) {
+				defer wg.Done()
+				switch d.ChangeType {
+				case types.ChangeTypeEnumModified, types.ChangeTypeEnumDeleted:
+					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.BeforeBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
+						return
+					}
+					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.AfterBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
+						return
+					}
+					diffResult := diff.Diff(
+						aws.ToString(d.BeforeBlob.Path),
+						bob.Content,
+						aws.ToString(d.AfterBlob.Path),
+						boa.Content,
+					)
+					ch <- Result[[]byte]{diffResult, nil}
+				case types.ChangeTypeEnumAdded:
+					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
+						BlobId:         d.AfterBlob.BlobId,
+						RepositoryName: aws.String(repo),
+					})
+					if err != nil {
+						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
+						return
+					}
+					diffResult := diff.Diff(
+						aws.ToString(d.AfterBlob.Path),
+						[]byte{},
+						aws.ToString(d.AfterBlob.Path),
+						boa.Content,
+					)
+					ch <- Result[[]byte]{diffResult, nil}
+				}
+			}(d)
+		}
+	}
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+	for res := range ch {
+		diffResults = append(diffResults, res)
+	}
+	return diffResults
 }

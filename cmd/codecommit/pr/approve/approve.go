@@ -110,6 +110,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.Spinner("Approving...", func() {
 		res = util.ApprovePRs(ccClient, prMap, prSelections)
 	})
+
+	// Output PR approval results
 	errCount := 0
 	for _, r := range res {
 		if r.Err != nil {
