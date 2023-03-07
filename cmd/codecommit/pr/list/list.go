@@ -94,12 +94,14 @@ func runCmd(cmd *cobra.Command, args []string) {
 				Status:       status,
 			})
 	})
+	util.ExitOnErr(err)
 
 	// Get PR information
 	var prInfoList []*codecommit.GetPullRequestOutput
 	util.Spinner("Getting PR Information...", func() {
 		prInfoList, err = util.GetPullRequestInfoFromIDs(ccClient, prIDs)
 	})
+	util.ExitOnErr(err)
 
 	// Generate table
 	var tbl *pterm.TablePrinter
