@@ -192,5 +192,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Write errors to file
-	e.Write(errBuf.Bytes())
+	_, err = e.Write(errBuf.Bytes())
+	if err != nil {
+		util.ExitOnErr(err)
+	}
 }
