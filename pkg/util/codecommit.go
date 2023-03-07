@@ -3,7 +3,6 @@ package util
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
@@ -150,10 +149,10 @@ func PRsToTable(headers []string, prList []*codecommit.GetPullRequestOutput) *pt
 				row = append(row, Basename(aws.ToString(t.DestinationReference)))
 			}
 			if slices.Contains(headers, "CreationDate") {
-				row = append(row, aws.ToTime(pr.PullRequest.CreationDate).Format(time.DateOnly))
+				row = append(row, aws.ToTime(pr.PullRequest.CreationDate).Format("2006-01-02"))
 			}
 			if slices.Contains(headers, "LastActivityDate") {
-				row = append(row, aws.ToTime(pr.PullRequest.LastActivityDate).Format(time.DateOnly))
+				row = append(row, aws.ToTime(pr.PullRequest.LastActivityDate).Format("2006-01-02"))
 			}
 			data = append(data, row)
 		}
