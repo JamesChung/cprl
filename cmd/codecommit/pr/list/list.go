@@ -108,5 +108,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.Spinner("Generating Table...", func() {
 		tbl = util.PRsToTable(util.GenerateTableHeaders(tblSelections), prInfoList)
 	})
-	tbl.Render()
+	err = tbl.Render()
+	util.ExitOnErr(err)
 }
