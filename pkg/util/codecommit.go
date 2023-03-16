@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"runtime"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -195,16 +196,30 @@ func ApprovePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []s
 	return results
 }
 
+func maxConcurrency() int {
+	cpuCount := runtime.NumCPU()
+	maxCount := 4
+	if cpuCount > maxCount {
+		return maxCount
+	}
+	return cpuCount
+}
+
 func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) []Result[[]byte] {
 	ctx := context.Background()
-	diffResults := make([]Result[[]byte], 0)
+	diffResults := make([]Result[[]byte], 0, 10)
 	wg := sync.WaitGroup{}
-	ch := make(chan Result[[]byte], 10)
+	ch := make(chan Result[[]byte], maxConcurrency())
+	semaphore := make(chan struct{}, maxConcurrency())
 	for _, do := range diffOut {
 		for _, d := range do.Differences {
 			wg.Add(1)
 			go func(d types.Difference) {
 				defer wg.Done()
+				semaphore <- struct{}{}
+				defer func() {
+					<-semaphore
+				}()
 				switch d.ChangeType {
 				case types.ChangeTypeEnumModified:
 					bob, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
