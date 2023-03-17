@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
@@ -197,6 +198,18 @@ func ApprovePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []s
 	return results
 }
 
+func filterDiffErrors(err error) error {
+	switch {
+	case strings.Contains(err.Error(), "TLS handshake timeout"):
+		fallthrough
+	case strings.Contains(err.Error(), "deserialization failed"):
+		fallthrough
+	case strings.Contains(err.Error(), "retry quota exceeded"):
+		return nil
+	}
+	return err
+}
+
 func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) []Result[[]byte] {
 	ctx := context.Background()
 	diffResults := make([]Result[[]byte], 0, 10)
@@ -207,6 +220,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 			wg.Add(1)
 			go func(d types.Difference) {
 				defer wg.Done()
+				sleep := ExponentialBackoff(time.Millisecond*100, time.Second*2)
 			retry:
 				switch d.ChangeType {
 				case types.ChangeTypeEnumModified:
@@ -215,10 +229,8 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 						RepositoryName: aws.String(repo),
 					})
 					if err != nil {
-						switch {
-						case strings.Contains(err.Error(), "deserialization failed"):
-							goto retry
-						case strings.Contains(err.Error(), "retry quota exceeded"):
+						if filterDiffErrors(err) == nil {
+							sleep()
 							goto retry
 						}
 						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
@@ -229,10 +241,8 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 						RepositoryName: aws.String(repo),
 					})
 					if err != nil {
-						switch {
-						case strings.Contains(err.Error(), "deserialization failed"):
-							goto retry
-						case strings.Contains(err.Error(), "retry quota exceeded"):
+						if filterDiffErrors(err) == nil {
+							sleep()
 							goto retry
 						}
 						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
@@ -251,10 +261,8 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 						RepositoryName: aws.String(repo),
 					})
 					if err != nil {
-						switch {
-						case strings.Contains(err.Error(), "deserialization failed"):
-							goto retry
-						case strings.Contains(err.Error(), "retry quota exceeded"):
+						if filterDiffErrors(err) == nil {
+							sleep()
 							goto retry
 						}
 						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
@@ -273,10 +281,8 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 						RepositoryName: aws.String(repo),
 					})
 					if err != nil {
-						switch {
-						case strings.Contains(err.Error(), "deserialization failed"):
-							goto retry
-						case strings.Contains(err.Error(), "retry quota exceeded"):
+						if filterDiffErrors(err) == nil {
+							sleep()
 							goto retry
 						}
 						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}

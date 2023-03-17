@@ -87,3 +87,21 @@ func SpinnerWithStatusMsg(startMsg string, closure SpinnerMsgFunc) {
 		return
 	}
 }
+
+func Backoff(t time.Duration) {
+	time.Sleep(t)
+}
+
+func ExponentialBackoff(init, limit time.Duration) func() {
+	internalTime := init
+	return func() {
+		Backoff(internalTime)
+		if internalTime < limit {
+			if internalTime*2 > limit {
+				internalTime = limit
+			} else {
+				internalTime *= 2
+			}
+		}
+	}
+}
