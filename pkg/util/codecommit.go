@@ -210,11 +210,12 @@ func filterDiffErrors(err error) error {
 	return err
 }
 
-func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) []Result[[]byte] {
+func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) (results []Result[[]byte], errs []Result[[]byte]) {
 	ctx := context.Background()
-	diffResults := make([]Result[[]byte], 0, 10)
+	results = make([]Result[[]byte], 0, 10)
 	wg := sync.WaitGroup{}
 	ch := make(chan Result[[]byte], runtime.NumCPU())
+	errChan := make(chan Result[[]byte], runtime.NumCPU())
 	for _, do := range diffOut {
 		for _, d := range do.Differences {
 			wg.Add(1)
@@ -233,7 +234,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 							sleep()
 							goto retry
 						}
-						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
+						errChan <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
 						return
 					}
 					boa, err := ccClient.Client.GetBlob(ctx, &codecommit.GetBlobInput{
@@ -245,7 +246,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 							sleep()
 							goto retry
 						}
-						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
+						errChan <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
 						return
 					}
 					diffResult := diff.Diff(
@@ -265,7 +266,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 							sleep()
 							goto retry
 						}
-						ch <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
+						errChan <- Result[[]byte]{[]byte(aws.ToString(d.AfterBlob.Path)), err}
 						return
 					}
 					diffResult := diff.Diff(
@@ -285,7 +286,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 							sleep()
 							goto retry
 						}
-						ch <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
+						errChan <- Result[[]byte]{[]byte(aws.ToString(d.BeforeBlob.Path)), err}
 						return
 					}
 					diffResult := diff.Diff(
@@ -301,10 +302,25 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 	}
 	go func() {
 		defer close(ch)
+		defer close(errChan)
 		wg.Wait()
 	}()
-	for res := range ch {
-		diffResults = append(diffResults, res)
-	}
-	return diffResults
+	diffWG := sync.WaitGroup{}
+	diffWG.Add(2)
+	// Poll results
+	go func() {
+		defer diffWG.Done()
+		for res := range ch {
+			results = append(results, res)
+		}
+	}()
+	// Poll errors
+	go func() {
+		defer diffWG.Done()
+		for res := range errChan {
+			errs = append(errs, res)
+		}
+	}()
+	diffWG.Wait()
+	return results, errs
 }

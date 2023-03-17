@@ -120,19 +120,11 @@ func runCmd(cmd *cobra.Command, args []string) {
 	})
 	util.ExitOnErr(err)
 
-	// Concurrently generate individual file diffs and consolidate them into a Result list
-	var diffResults, badResults, rawResults []util.Result[[]byte]
+	// Concurrently generate individual file diffs
+	var diffResults, badResults []util.Result[[]byte]
 	util.Spinner("Generating Differences...", func() {
-		rawResults = util.GenerateDiffs(ccClient, repo, diffOut)
+		diffResults, badResults = util.GenerateDiffs(ccClient, repo, diffOut)
 	})
-
-	// Filter results for errors
-	for _, res := range rawResults {
-		if res.Err != nil {
-			badResults = append(badResults, res)
-		}
-		diffResults = append(diffResults, res)
-	}
 
 	// Prompt user for the name of the diff file
 	dFileName, err := pterm.DefaultInteractiveTextInput.Show("Submit name of diff file")
