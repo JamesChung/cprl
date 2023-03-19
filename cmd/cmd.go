@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 
 	"github.com/JamesChung/cprl/cmd/codecommit"
@@ -27,6 +28,11 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 		"",
 		"overrides [aws-profile] value in cprl.yaml",
 	)
+	flags.Bool(
+		"gen-docs",
+		false,
+		"generate markdown docs",
+	)
 }
 
 func NewCmd() *cobra.Command {
@@ -34,6 +40,15 @@ func NewCmd() *cobra.Command {
 		Use:     "cprl",
 		Short:   "cprl",
 		Version: "v0.0.0-alpha",
+		Run: func(cmd *cobra.Command, args []string) {
+			genDocs, err := util.GetFlagBool(cmd, "gen-docs")
+			util.ExitOnErr(err)
+			if !genDocs {
+				return
+			}
+			err = doc.GenMarkdownTree(cmd, "./docs")
+			util.ExitOnErr(err)
+		},
 	}
 	setPersistentFlags(rootCmd.PersistentFlags())
 	util.AddGroup(rootCmd, "Services:", cprlCommands()...)
