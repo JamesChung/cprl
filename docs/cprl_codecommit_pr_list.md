@@ -1,0 +1,36 @@
+## cprl codecommit pr list
+
+List PRs
+
+### Synopsis
+
+List a resource
+
+```
+cprl codecommit pr list [flags]
+```
+
+### Examples
+
+```
+  cprl codecommit pr list
+```
+
+### Options
+
+```
+      --author-arn string   filter by author
+      --closed              filter closed PRs
+  -h, --help                help for list
+```
+
+### Options inherited from parent commands
+
+```
+      --aws-profile string   overrides [aws-profile] value in cprl.yaml
+      --profile string       references a profile in cprl.yaml (default "default")
+```
+
+### SEE ALSO
+
+* [cprl codecommit pr](cprl_codecommit_pr.md)	 - Manage PRs

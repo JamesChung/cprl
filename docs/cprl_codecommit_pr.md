@@ -1,0 +1,31 @@
+## cprl codecommit pr
+
+Manage PRs
+
+### Examples
+
+```
+  cprl codecommit pr
+  cprl codecommit pr --aws-profile=dev-account
+```
+
+### Options
+
+```
+  -h, --help   help for pr
+```
+
+### Options inherited from parent commands
+
+```
+      --aws-profile string   overrides [aws-profile] value in cprl.yaml
+      --profile string       references a profile in cprl.yaml (default "default")
+```
+
+### SEE ALSO
+
+* [cprl codecommit](cprl_codecommit.md)	 - CodeCommit
+* [cprl codecommit pr approve](cprl_codecommit_pr_approve.md)	 - Approve PRs
+* [cprl codecommit pr create](cprl_codecommit_pr_create.md)	 - Create PRs
+* [cprl codecommit pr diff](cprl_codecommit_pr_diff.md)	 - Diff PRs
+* [cprl codecommit pr list](cprl_codecommit_pr_list.md)	 - List PRs

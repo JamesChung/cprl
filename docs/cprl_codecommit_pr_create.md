@@ -1,0 +1,36 @@
+## cprl codecommit pr create
+
+Create PRs
+
+### Synopsis
+
+Create a PR
+
+```
+cprl codecommit pr create [flags]
+```
+
+### Examples
+
+```
+  cprl codecommit pr create
+  cprl codecommit pr create --aws-profile=dev-account
+```
+
+### Options
+
+```
+  -h, --help                help for create
+      --repository string   repository name override
+```
+
+### Options inherited from parent commands
+
+```
+      --aws-profile string   overrides [aws-profile] value in cprl.yaml
+      --profile string       references a profile in cprl.yaml (default "default")
+```
+
+### SEE ALSO
+
+* [cprl codecommit pr](cprl_codecommit_pr.md)	 - Manage PRs

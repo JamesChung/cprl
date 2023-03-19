@@ -21,6 +21,12 @@ func init() {
 func main() {
 	cli := cmd.NewCmd()
 
+	// Generate cli documents
+	// err := doc.GenMarkdownTree(cli, "./docs")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	if err := cli.Execute(); err != nil {
 		os.Exit(1)
 	}
