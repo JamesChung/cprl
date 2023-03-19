@@ -1,8 +1,10 @@
-# cprl
-
 # [WARNING] In Early Development
 
-## [Commands Documentation](./docs/cprl.md)
+# cprl
+
+## Commands
+
+**[Documentation link](./docs/cprl.md)**
 
 ## Config File
 
