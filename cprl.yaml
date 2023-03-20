@@ -1,6 +1,7 @@
 default:
   config:
     aws-profile: default
+    gov-cloud: true
   services:
     codecommit:
       repositories:
