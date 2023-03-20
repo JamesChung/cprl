@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
@@ -29,9 +31,9 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 		"overrides [aws-profile] value in cprl.yaml",
 	)
 	flags.Bool(
-		"gen-docs",
+		"gov-cloud",
 		false,
-		"generate markdown docs",
+		"set context as gov-cloud",
 	)
 }
 
@@ -41,13 +43,13 @@ func NewCmd() *cobra.Command {
 		Short:   "cprl",
 		Version: "v0.0.0-alpha",
 		Run: func(cmd *cobra.Command, args []string) {
-			genDocs, err := util.GetFlagBool(cmd, "gen-docs")
-			util.ExitOnErr(err)
-			if !genDocs {
+			val := os.Getenv("CPRL_DOCS")
+			if val != "" {
+				err := doc.GenMarkdownTree(cmd, val)
+				util.ExitOnErr(err)
 				return
 			}
-			err = doc.GenMarkdownTree(cmd, "./docs")
-			util.ExitOnErr(err)
+			cmd.Help()
 		},
 	}
 	setPersistentFlags(rootCmd.PersistentFlags())
