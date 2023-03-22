@@ -6,6 +6,7 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/cmd/codecommit/pr/approve"
+	"github.com/JamesChung/cprl/cmd/codecommit/pr/closes"
 	"github.com/JamesChung/cprl/cmd/codecommit/pr/create"
 	"github.com/JamesChung/cprl/cmd/codecommit/pr/diff"
 	"github.com/JamesChung/cprl/cmd/codecommit/pr/list"
@@ -27,6 +28,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 func prCommands() []*cobra.Command {
 	return []*cobra.Command{
 		approve.NewCmdApprovePR(),
+		closes.NewCmdClosePR(),
 		create.NewCmdCreatePR(),
 		diff.NewCmdDiffPR(),
 		list.NewCmdListPR(),

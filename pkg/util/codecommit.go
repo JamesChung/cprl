@@ -198,19 +198,50 @@ func ApprovePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []s
 	return results
 }
 
+func ClosePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []string) []Result[string] {
+	ctx := context.Background()
+	wg := sync.WaitGroup{}
+	ch := make(chan Result[string], 10)
+	for _, v := range prSelections {
+		wg.Add(1)
+		go func(v string) {
+			defer wg.Done()
+			_, err := ccClient.Client.UpdatePullRequestStatus(
+				ctx, &codecommit.UpdatePullRequestStatusInput{
+					PullRequestId:     prMap[v].PullRequest.PullRequestId,
+					PullRequestStatus: types.PullRequestStatusEnumClosed,
+				})
+			if err != nil {
+				ch <- Result[string]{v, err}
+				return
+			}
+			ch <- Result[string]{v, nil}
+		}(v)
+	}
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+	results := make([]Result[string], 0)
+	for res := range ch {
+		results = append(results, res)
+	}
+	return results
+}
+
 func filterDiffErrors(err error) error {
 	switch {
 	case strings.Contains(err.Error(), "TLS handshake timeout"):
-		fallthrough
+		return nil
 	case strings.Contains(err.Error(), "deserialization failed"):
-		fallthrough
+		return nil
 	case strings.Contains(err.Error(), "retry quota exceeded"):
 		return nil
 	}
 	return err
 }
 
-func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) (results []Result[[]byte], errs []Result[[]byte]) {
+func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*codecommit.GetDifferencesOutput) (results, errs []Result[[]byte]) {
 	ctx := context.Background()
 	results = make([]Result[[]byte], 0, 10)
 	wg := sync.WaitGroup{}
