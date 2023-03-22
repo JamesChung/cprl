@@ -1,26 +1,26 @@
-## cprl codecommit pr create
+## cprl codecommit pr close
 
-Create PRs
+Close PRs
 
 ### Synopsis
 
-Create a PR
+Close a PR
 
 ```
-cprl codecommit pr create [flags]
+cprl codecommit pr close [flags]
 ```
 
 ### Examples
 
 ```
-  cprl codecommit pr create
-  cprl codecommit pr create --aws-profile=dev-account
+  cprl codecommit pr close
 ```
 
 ### Options
 
 ```
-  -h, --help                help for create
+      --author-arn string   filter by author
+  -h, --help                help for close
       --repository string   repository name override
 ```
 
