@@ -3,8 +3,6 @@ package del
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/codecommit"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -86,20 +84,22 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Delete branches
-	var results []*codecommit.DeleteBranchOutput
-	var errs []util.Result[string]
+	var results []util.Result[string]
 	util.Spinner("Deleting...", func() {
-		results, errs = util.DeleteBranches(ccClient, repo, branchSelections)
+		results = util.DeleteBranches(ccClient, repo, branchSelections)
 	})
 
+	failCount := 0
 	for _, r := range results {
-		pterm.Success.Printf("Successfully deleted branch [%s]\n", aws.ToString(r.DeletedBranch.BranchName))
+		if r.Err != nil {
+			pterm.Error.Printf("Failed to delete branch [%s]\n", r.Result)
+			failCount++
+			continue
+		}
+		pterm.Success.Printf("Successfully deleted branch [%s]\n", r.Result)
 	}
 
-	if len(errs) > 0 {
-		for _, e := range errs {
-			pterm.Error.Printf("Failed to delete branch [%s]\n", e.Result)
-		}
-		util.ExitOnErr(fmt.Errorf("%d branches failed to be deleted\n", len(errs)))
+	if failCount > 0 {
+		util.ExitOnErr(fmt.Errorf("Failed to delete %d branches\n", failCount))
 	}
 }

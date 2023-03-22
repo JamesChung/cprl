@@ -229,43 +229,30 @@ func ClosePRs(ccClient *client.CodeCommitClient, prMap PRMap, prSelections []str
 	return results
 }
 
-func DeleteBranches(ccClient *client.CodeCommitClient, repo string, branches []string) (results []*codecommit.DeleteBranchOutput, errs []Result[string]) {
-	resCh := make(chan Result[*codecommit.DeleteBranchOutput], runtime.NumCPU())
-	errCh := make(chan Result[string], runtime.NumCPU())
+func DeleteBranches(ccClient *client.CodeCommitClient, repo string, branches []string) []Result[string] {
+	resCh := make(chan Result[string], runtime.NumCPU())
 	wg := sync.WaitGroup{}
+	results := make([]Result[string], 0, 10)
 	for _, branch := range branches {
 		wg.Add(1)
 		go func(branch string) {
 			defer wg.Done()
 			res, err := ccClient.DeleteBranch(repo, branch)
 			if err != nil {
-				errCh <- Result[string]{branch, err}
+				resCh <- Result[string]{branch, err}
 				return
 			}
-			resCh <- Result[*codecommit.DeleteBranchOutput]{res, nil}
+			resCh <- Result[string]{aws.ToString(res.DeletedBranch.BranchName), nil}
 		}(branch)
 	}
 	go func() {
 		defer close(resCh)
-		defer close(errCh)
 		wg.Wait()
 	}()
-	funcWg := sync.WaitGroup{}
-	funcWg.Add(2)
-	go func() {
-		defer funcWg.Done()
-		for r := range resCh {
-			results = append(results, r.Result)
-		}
-	}()
-	go func() {
-		defer funcWg.Done()
-		for e := range errCh {
-			errs = append(errs, e)
-		}
-	}()
-	funcWg.Wait()
-	return results, errs
+	for r := range resCh {
+		results = append(results, r)
+	}
+	return results
 }
 
 func filterDiffErrors(err error) error {
