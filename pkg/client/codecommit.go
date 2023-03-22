@@ -70,6 +70,18 @@ func (l *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 	return branches, nil
 }
 
+func (l *CodeCommitClient) DeleteBranch(repo string, branch string) (*codecommit.DeleteBranchOutput, error) {
+	ctx := context.Background()
+	res, err := l.Client.DeleteBranch(ctx, &codecommit.DeleteBranchInput{
+		RepositoryName: aws.String(repo),
+		BranchName:     aws.String(branch),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (l *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) (*codecommit.CreatePullRequestOutput, error) {
 	ctx := context.Background()
 	p, err := l.Client.CreatePullRequest(

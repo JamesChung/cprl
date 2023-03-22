@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
+	"github.com/JamesChung/cprl/cmd/console/open"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -17,26 +18,27 @@ var (
 )
 
 func consoleCommands() []*cobra.Command {
-	return []*cobra.Command{}
+	return []*cobra.Command{
+		open.NewCmd(),
+	}
 }
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO
+	flags.Bool(
+		"gov-cloud",
+		false,
+		"set context as gov-cloud",
+	)
 }
 
 func NewCmdConsole() *cobra.Command {
 	consoleCmd := &cobra.Command{
 		Use:     "console",
-		Aliases: []string{"con"},
+		Aliases: []string{"co"},
 		Short:   shortMessage,
 		Example: example,
-		Run:     runCmd,
 	}
 	setPersistentFlags(consoleCmd.PersistentFlags())
-	util.AddGroup(consoleCmd, "Commands:", consoleCommands()...)
+	util.AddGroup(consoleCmd, "Console:", consoleCommands()...)
 	return consoleCmd
-}
-
-func runCmd(cmd *cobra.Command, args []string) {
-	cmd.Println("This command is under development")
 }
