@@ -1,8 +1,9 @@
 default:
   config:
     aws-profile: default
-    gov-cloud: true
   services:
+    console:
+      gov-cloud: true
     codecommit:
       repositories:
         - test-repo1
