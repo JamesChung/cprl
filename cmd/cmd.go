@@ -14,7 +14,7 @@ import (
 
 func cprlCommands() []*cobra.Command {
 	return []*cobra.Command{
-		codecommit.NewCmdCodeCommit(),
+		codecommit.NewCmd(),
 		console.NewCmdConsole(),
 	}
 }

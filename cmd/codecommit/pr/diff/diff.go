@@ -43,7 +43,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
-func NewCmdDiffPR() *cobra.Command {
+func NewCmd() *cobra.Command {
 	diff := &cobra.Command{
 		Use:     "diff",
 		Aliases: []string{"d"},

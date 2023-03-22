@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
+	"github.com/JamesChung/cprl/cmd/codecommit/branch"
 	"github.com/JamesChung/cprl/cmd/codecommit/pr"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -19,7 +20,8 @@ var (
 
 func codeCommitCommands() []*cobra.Command {
 	return []*cobra.Command{
-		pr.NewCmdPR(),
+		branch.NewCmd(),
+		pr.NewCmd(),
 	}
 }
 
@@ -31,7 +33,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	// )
 }
 
-func NewCmdCodeCommit() *cobra.Command {
+func NewCmd() *cobra.Command {
 	codeCommitCmd := &cobra.Command{
 		Use:     "codecommit",
 		Aliases: []string{"cc"},

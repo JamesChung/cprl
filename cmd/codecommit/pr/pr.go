@@ -27,15 +27,15 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 
 func prCommands() []*cobra.Command {
 	return []*cobra.Command{
-		approve.NewCmdApprovePR(),
-		closes.NewCmdClosePR(),
-		create.NewCmdCreatePR(),
-		diff.NewCmdDiffPR(),
-		list.NewCmdListPR(),
+		approve.NewCmd(),
+		closes.NewCmd(),
+		create.NewCmd(),
+		diff.NewCmd(),
+		list.NewCmd(),
 	}
 }
 
-func NewCmdPR() *cobra.Command {
+func NewCmd() *cobra.Command {
 	prCmd := &cobra.Command{
 		Use:     "pr",
 		Short:   shortMessage,

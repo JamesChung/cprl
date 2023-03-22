@@ -41,7 +41,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
-func NewCmdApprovePR() *cobra.Command {
+func NewCmd() *cobra.Command {
 	approve := &cobra.Command{
 		Use:     "approve",
 		Aliases: []string{"a"},

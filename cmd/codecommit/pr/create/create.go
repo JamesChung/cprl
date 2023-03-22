@@ -35,7 +35,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
-func NewCmdCreatePR() *cobra.Command {
+func NewCmd() *cobra.Command {
 	create := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"c"},

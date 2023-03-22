@@ -41,7 +41,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
-func NewCmdClosePR() *cobra.Command {
+func NewCmd() *cobra.Command {
 	closesCmd := &cobra.Command{
 		Use:     "close",
 		Aliases: []string{"cl"},
