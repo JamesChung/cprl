@@ -30,11 +30,6 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 		"",
 		"overrides [aws-profile] value in cprl.yaml",
 	)
-	flags.Bool(
-		"gov-cloud",
-		false,
-		"set context as gov-cloud",
-	)
 }
 
 func NewCmd() *cobra.Command {
