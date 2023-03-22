@@ -121,9 +121,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Concurrently generate individual file diffs
-	var diffResults, badResults []util.Result[[]byte]
+	var results, badResults []util.Result[[]byte]
 	util.Spinner("Generating Differences...", func() {
-		diffResults, badResults = util.GenerateDiffs(ccClient, repo, diffOut)
+		results = util.GenerateDiffs(ccClient, repo, diffOut)
 	})
 
 	// Prompt user for the name of the diff file
@@ -137,7 +137,11 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	// Use a bytes buffer to write the complete diff file from individual file diff bytes
 	buf := bytes.Buffer{}
-	for _, res := range diffResults {
+	for _, res := range results {
+		if res.Err != nil {
+			badResults = append(badResults, res)
+			continue
+		}
 		_, err = buf.Write(res.Result)
 		if err != nil {
 			util.ExitOnErr(err)
