@@ -2,6 +2,29 @@
 
 # cprl
 
+## How to Install
+
+### Homebrew
+
+```sh
+$ brew tap JamesChung/tap
+$ brew install JamesChung/tap/cprl
+```
+
+### Go
+
+```sh
+$ go install github.com/JamesChung/cprl@latest
+```
+
+### Make
+
+> This will build and install the binary to your `~/.local/bin`. Make sure you have that in your `PATH`.
+
+```sh
+$ make local
+```
+
 ## Commands
 
 **[Documentation link](./docs/cprl.md)**
