@@ -13,6 +13,11 @@ import (
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
+var (
+	cprlConfigDir  = ".config/cprl"
+	cprlConfigFile = fmt.Sprintf("%s/cprl.yaml", cprlConfigDir)
+)
+
 // Read config file cprl.yaml
 func Read() error {
 	// Set config file as cprl.yaml
@@ -29,7 +34,7 @@ func Read() error {
 	}
 
 	// Check user home config directory second
-	cfgUserHomePath := path.Join(homeDir, ".config/cprl")
+	cfgUserHomePath := path.Join(homeDir, cprlConfigDir)
 	viper.AddConfigPath(cfgUserHomePath)
 
 	// Read config file
@@ -90,18 +95,18 @@ func Create() error {
 		return err
 	}
 	// Check if cprl config directory exists
-	_, err = os.ReadDir(path.Join(homeDir, ".config/cprl"))
+	_, err = os.ReadDir(path.Join(homeDir, cprlConfigDir))
 	if err != nil {
 		if os.IsNotExist(err) {
 			// If cprl config directory doesn't exist then create it
-			err := os.Mkdir(path.Join(homeDir, ".config/cprl"), 0755)
+			err := os.Mkdir(path.Join(homeDir, cprlConfigDir), 0755)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	// Create new cprl config file
-	f, err := os.Create(path.Join(homeDir, ".config/cprl/cprl.yaml"))
+	f, err := os.Create(path.Join(homeDir, cprlConfigFile))
 	if err != nil {
 		return err
 	}
