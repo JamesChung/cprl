@@ -34,6 +34,15 @@ changelog:
       - '^docs:'
       - '^test:'
 
+brews:
+  - tap:
+      owner: JamesChung
+      name: homebrew-tap
+    folder: Formula
+    homepage: https://github.com/JamesChung/cprl
+    description: Multipurpose command line tool for AWS to make development life easier
+    license: MIT
+
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
