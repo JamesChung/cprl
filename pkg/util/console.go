@@ -1,20 +1,24 @@
 package util
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
+	"runtime"
 	"time"
 
 	"gopkg.in/ini.v1"
 )
 
 type Credentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
+	AccessKeyID     string `json:"sessionId"`
+	SecretAccessKey string `json:"sessionKey"`
+	SessionToken    string `json:"sessionToken"`
 }
 
 func GetCredentials(profile string) (Credentials, error) {
@@ -38,44 +42,93 @@ func GetCredentials(profile string) (Credentials, error) {
 	}, nil
 }
 
-// func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
-// 	c, err := json.Marshal(creds)
-// 	if err != nil {
-// 		return url.URL{}, err
-// 	}
-// 	federationURL := url.URL{
-// 		Scheme: "https",
-// 		Host:   "signin.aws.amazon.com",
-// 		Path:   "federation",
-// 		RawQuery: fmt.Sprintf(
-// 			"Action=getSigninToken&DurationSeconds=43200&Session=%s",
-// 			string(c),
-// 		),
-// 	}
+func StringifyCredentials(creds Credentials) (string, error) {
+	b, err := json.Marshal(creds)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
 
-// 	token, err := GetFederatedToken(federationURL)
-// 	if err != nil {
-// 		return url.URL{}, nil
-// 	}
+func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
+	c, err := StringifyCredentials(creds)
+	if err != nil {
+		return url.URL{}, err
+	}
 
-// 	loginURL := url.URL{
-// 		Scheme: "https",
-// 		Host:   "",
-// 	}
-// 	return federationURL, nil
-// }
+	federationQuery := url.Values{}
+	federationQuery.Add("Action", "getSigninToken")
+	federationQuery.Add("DurationSeconds", "43200")
+	federationQuery.Add("Session", c)
+	federationURL := url.URL{
+		Scheme:   "https",
+		Host:     "signin.aws.amazon.com",
+		Path:     "federation",
+		RawQuery: federationQuery.Encode(),
+	}
+
+	token, err := GetFederatedToken(federationURL)
+	if err != nil {
+		return url.URL{}, err
+	}
+
+	loginQuery := url.Values{}
+	loginQuery.Add("Action", "login")
+	loginQuery.Add("Destination", "https://console.aws.amazon.com/")
+	loginQuery.Add("SigninToken", token)
+	loginQuery.Add("Issuer", "https://example.com")
+	loginURL := url.URL{
+		Scheme:   "https",
+		Host:     "signin.aws.amazon.com",
+		Path:     "federation",
+		RawQuery: loginQuery.Encode(),
+	}
+
+	return loginURL, nil
+}
 
 func GetFederatedToken(u url.URL) (string, error) {
 	c := http.Client{
-		Timeout: time.Second * 3,
+		Timeout: time.Second * 5,
 	}
+
 	res, err := c.Get(u.String())
 	if err != nil {
 		return "", err
 	}
-	token, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get federated token, status code %d", res.StatusCode)
+	}
+
+	b, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}
-	return string(token), nil
+
+	data := map[string]string{}
+	err = json.Unmarshal(b, &data)
+	if err != nil {
+		return "", err
+	}
+
+	return data["SigninToken"], nil
+}
+
+func OpenBrowser(url string) error {
+	var err error
+
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform: [%s]", runtime.GOOS)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }

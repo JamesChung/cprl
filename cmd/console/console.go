@@ -34,7 +34,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 func NewCmdConsole() *cobra.Command {
 	consoleCmd := &cobra.Command{
 		Use:     "console",
-		Aliases: []string{"co"},
+		Aliases: []string{"co", "con"},
 		Short:   shortMessage,
 		Example: example,
 	}

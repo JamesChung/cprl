@@ -35,5 +35,10 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 	isGovCloud, err := console.IsGovCloud(cmd, profile)
 	util.ExitOnErr(err)
-	cmd.Println(isGovCloud, awsProfile)
+	creds, err := util.GetCredentials(awsProfile)
+	util.ExitOnErr(err)
+	loginURL, err := util.GenerateLoginURL(creds, isGovCloud)
+	util.ExitOnErr(err)
+	err = util.OpenBrowser(loginURL.String())
+	util.ExitOnErr(err)
 }
