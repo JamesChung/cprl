@@ -6,6 +6,7 @@ build:
 test:
 	go test -v
 
+.PHONY:release
 release:
 	goreleaser release --clean
 
