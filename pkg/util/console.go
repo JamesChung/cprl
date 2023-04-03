@@ -50,7 +50,7 @@ func StringifyCredentials(creds Credentials) (string, error) {
 	return string(b), nil
 }
 
-func AWSHost(isGov bool) string {
+func AWSHostname(isGov bool) string {
 	if isGov {
 		return "amazonaws-us-gov.com"
 	}
@@ -63,7 +63,7 @@ func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 		return url.URL{}, err
 	}
 
-	signinURL := fmt.Sprintf("signin.%s", AWSHost(isGov))
+	signinURL := fmt.Sprintf("signin.%s", AWSHostname(isGov))
 
 	federationQuery := url.Values{}
 	federationQuery.Add("Action", "getSigninToken")
@@ -83,17 +83,11 @@ func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 
 	loginQuery := url.Values{}
 	loginQuery.Add("Action", "login")
-	loginQuery.Add("Destination", fmt.Sprintf("https://console.%s/", AWSHost(isGov)))
+	loginQuery.Add("Destination", fmt.Sprintf("https://console.%s/", AWSHostname(isGov)))
 	loginQuery.Add("SigninToken", token)
-	loginQuery.Add("Issuer", "https://example.com")
-	loginURL := url.URL{
-		Scheme:   "https",
-		Host:     signinURL,
-		Path:     "federation",
-		RawQuery: loginQuery.Encode(),
-	}
+	federationURL.RawQuery = loginQuery.Encode()
 
-	return loginURL, nil
+	return federationURL, nil
 }
 
 func GetFederatedToken(u url.URL) (string, error) {
@@ -139,5 +133,6 @@ func OpenBrowser(url string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

@@ -18,18 +18,6 @@ func TestRead(t *testing.T) {
 	fmt.Println(string(js))
 }
 
-// func TestGetFederatedToken(t *testing.T) {
-// 	u := url.URL{
-// 		Scheme: "https",
-// 		Host:   "google.com",
-// 	}
-// 	res, err := util.GetFederatedToken(u)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	fmt.Println(res)
-// }
-
 func TestGenerateLoginURL(t *testing.T) {
 	creds, err := util.GetCredentials("default")
 	if err != nil {
