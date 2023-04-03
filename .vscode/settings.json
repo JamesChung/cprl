@@ -1,21 +1,22 @@
 {
-    "cSpell.words": [
-        "Backoff",
-        "briandowns",
-        "cmds",
-        "cmdutil",
-        "cprl",
-        "diffmatchpatch",
-        "Errln",
-        "goreleaser",
-        "incpatch",
-        "modeline",
-        "modelines",
-        "pflag",
-        "pterm",
-        "rodaine",
-        "sergi",
-        "signin",
-        "spnr"
-    ]
+  "cSpell.words": [
+    "Backoff",
+    "briandowns",
+    "cmds",
+    "cmdutil",
+    "cprl",
+    "diffmatchpatch",
+    "Errln",
+    "goreleaser",
+    "incpatch",
+    "modeline",
+    "modelines",
+    "pflag",
+    "pterm",
+    "rodaine",
+    "rundll",
+    "sergi",
+    "signin",
+    "spnr"
+  ]
 }
