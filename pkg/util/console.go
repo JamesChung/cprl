@@ -50,11 +50,20 @@ func StringifyCredentials(creds Credentials) (string, error) {
 	return string(b), nil
 }
 
+func AWSHost(isGov bool) string {
+	if isGov {
+		return "amazonaws-us-gov.com"
+	}
+	return "aws.amazon.com"
+}
+
 func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 	c, err := StringifyCredentials(creds)
 	if err != nil {
 		return url.URL{}, err
 	}
+
+	signinURL := fmt.Sprintf("signin.%s", AWSHost(isGov))
 
 	federationQuery := url.Values{}
 	federationQuery.Add("Action", "getSigninToken")
@@ -62,7 +71,7 @@ func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 	federationQuery.Add("Session", c)
 	federationURL := url.URL{
 		Scheme:   "https",
-		Host:     "signin.aws.amazon.com",
+		Host:     signinURL,
 		Path:     "federation",
 		RawQuery: federationQuery.Encode(),
 	}
@@ -74,12 +83,12 @@ func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 
 	loginQuery := url.Values{}
 	loginQuery.Add("Action", "login")
-	loginQuery.Add("Destination", "https://console.aws.amazon.com/")
+	loginQuery.Add("Destination", fmt.Sprintf("https://console.%s/", AWSHost(isGov)))
 	loginQuery.Add("SigninToken", token)
 	loginQuery.Add("Issuer", "https://example.com")
 	loginURL := url.URL{
 		Scheme:   "https",
-		Host:     "signin.aws.amazon.com",
+		Host:     signinURL,
 		Path:     "federation",
 		RawQuery: loginQuery.Encode(),
 	}
