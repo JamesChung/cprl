@@ -6,49 +6,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"os/exec"
-	"path"
 	"runtime"
 	"time"
-
-	"gopkg.in/ini.v1"
 )
-
-type Credentials struct {
-	AccessKeyID     string `json:"sessionId"`
-	SecretAccessKey string `json:"sessionKey"`
-	SessionToken    string `json:"sessionToken"`
-}
-
-func GetCredentials(profile string) (Credentials, error) {
-	// Find user home directory
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return Credentials{}, err
-	}
-
-	f, err := ini.Load(path.Join(homeDir, ".aws/credentials"))
-	if err != nil {
-		return Credentials{}, err
-	}
-
-	s := f.Section(profile)
-
-	return Credentials{
-		AccessKeyID:     s.Key("aws_access_key_id").String(),
-		SecretAccessKey: s.Key("aws_secret_access_key").String(),
-		SessionToken:    s.Key("aws_session_token").String(),
-	}, nil
-}
-
-func StringifyCredentials(creds Credentials) (string, error) {
-	b, err := json.Marshal(creds)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
 
 func AWSHostname(isGov bool) string {
 	if isGov {
