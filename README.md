@@ -41,7 +41,7 @@ default:                            # cprl will always default to this profile
     aws-profile: <profile name>     # this aws profile will be used by default for commands
   services:                         # individual service level configurations
     console:
-      gov-cloud: true
+      gov-cloud: true | false
     codecommit:                     # name of a supported service
       repositories:                 # service specific configurations
         - <repo name>
