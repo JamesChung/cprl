@@ -9,13 +9,15 @@ import (
 
 	"github.com/JamesChung/cprl/cmd/codecommit"
 	"github.com/JamesChung/cprl/cmd/console"
+	"github.com/JamesChung/cprl/cmd/credentials"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
 func cprlCommands() []*cobra.Command {
 	return []*cobra.Command{
+		credentials.NewCmd(),
+		console.NewCmd(),
 		codecommit.NewCmd(),
-		console.NewCmdConsole(),
 	}
 }
 

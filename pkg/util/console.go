@@ -53,7 +53,7 @@ func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
 
 func GetFederatedToken(u url.URL) (string, error) {
 	c := http.Client{
-		Timeout: time.Second * 5,
+		Timeout: time.Second * 3,
 	}
 
 	res, err := c.Get(u.String())

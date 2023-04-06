@@ -31,14 +31,14 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
-func NewCmdConsole() *cobra.Command {
-	consoleCmd := &cobra.Command{
+func NewCmd() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "console",
 		Aliases: []string{"co", "con"},
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(consoleCmd.PersistentFlags())
-	util.AddGroup(consoleCmd, "Console:", consoleCommands()...)
-	return consoleCmd
+	setPersistentFlags(cmd.PersistentFlags())
+	util.AddGroup(cmd, "Console:", consoleCommands()...)
+	return cmd
 }
