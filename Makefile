@@ -13,3 +13,7 @@ release:
 .PHONY: local
 local:
 	go build -o cprl . && mv cprl ~/.local/bin
+
+.PHONY: docs
+docs:
+	CPRL_DOCS=./docs go run main.go
