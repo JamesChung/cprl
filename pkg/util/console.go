@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"runtime"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 func AWSHostname(isGov bool) string {
@@ -18,7 +20,7 @@ func AWSHostname(isGov bool) string {
 	return "aws.amazon.com"
 }
 
-func GenerateLoginURL(creds Credentials, isGov bool) (url.URL, error) {
+func GenerateLoginURL(creds aws.Credentials, isGov bool) (url.URL, error) {
 	c, err := StringifyCredentials(creds)
 	if err != nil {
 		return url.URL{}, err
