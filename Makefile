@@ -10,6 +10,10 @@ test:
 release:
 	goreleaser release --clean
 
+.PHONY: tag
+tag:
+	git tag -a v0.0.0-prealpha-$$(date +"%Y%m%d%H%M%S") -m v0.0.0-prealpha-$$(date +"%Y%m%d%H%M%S")
+
 .PHONY: local
 local:
 	go build -o cprl . && mv cprl ~/.local/bin
