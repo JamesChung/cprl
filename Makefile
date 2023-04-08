@@ -12,7 +12,7 @@ release:
 
 .PHONY: tag
 tag:
-	git tag -a v0.0.0-prealpha-$$(date +"%Y%m%d%H%M%S") -m v0.0.0-prealpha-$$(date +"%Y%m%d%H%M%S")
+	git tag -a v0.0.0-alpha-$$(date +"%Y%m%d%H%M%S") -m v0.0.0-alpha-$$(date +"%Y%m%d%H%M%S")
 
 .PHONY: local
 local:
