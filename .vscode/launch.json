@@ -18,6 +18,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "args": ["console", "open", "--profile", "secondary"]
+        },
+        {
+            "name": "Testing clear",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "args": ["credentials", "clear"]
         }
     ]
 }

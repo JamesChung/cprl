@@ -31,13 +31,34 @@ func GetCredentials(profile string) (aws.Credentials, error) {
 	return creds, nil
 }
 
-func WriteCredentials(section string, creds aws.Credentials) error {
+func GetProfiles() ([]string, error) {
+	credentialsFile, err := getCredentialsFilePath()
+	if err != nil {
+		return nil, err
+	}
+	ini.PrettyFormat = false
+	f, err := ini.Load(credentialsFile)
+	if err != nil {
+		return nil, err
+	}
+	return f.SectionStrings()[1:], nil
+}
+
+func getCredentialsFilePath() (string, error) {
 	// Find user home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return "", err
 	}
 	credentialsFile := path.Join(homeDir, ".aws/credentials")
+	return credentialsFile, nil
+}
+
+func WriteCredentials(section string, creds aws.Credentials) error {
+	credentialsFile, err := getCredentialsFilePath()
+	if err != nil {
+		return err
+	}
 
 	ini.PrettyFormat = false
 	f, err := ini.Load(credentialsFile)
@@ -48,6 +69,24 @@ func WriteCredentials(section string, creds aws.Credentials) error {
 	s.NewKey("aws_access_key_id", creds.AccessKeyID)
 	s.NewKey("aws_secret_access_key", creds.SecretAccessKey)
 	s.NewKey("aws_session_token", creds.SessionToken)
+	err = f.SaveTo(credentialsFile)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ClearProfile(profile string) error {
+	credentialsFile, err := getCredentialsFilePath()
+	if err != nil {
+		return err
+	}
+	ini.PrettyFormat = false
+	f, err := ini.Load(credentialsFile)
+	if err != nil {
+		return err
+	}
+	f.DeleteSection(profile)
 	err = f.SaveTo(credentialsFile)
 	if err != nil {
 		return err
