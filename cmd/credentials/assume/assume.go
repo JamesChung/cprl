@@ -23,14 +23,14 @@ var (
 )
 
 func NewCmd() *cobra.Command {
-	consoleCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "assume",
-		Aliases: []string{"a"},
+		Aliases: []string{"a", "as"},
 		Short:   shortMessage,
 		Example: example,
 		Run:     runCmd,
 	}
-	return consoleCmd
+	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
@@ -38,16 +38,19 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 	stsClient, err := client.NewSTSClient(awsProfile)
 	util.ExitOnErr(err)
-	arn, err := pterm.DefaultInteractiveTextInput.WithDefaultText("Role ARN").Show()
+	roleARN, err := pterm.DefaultInteractiveTextInput.
+		WithDefaultText("Role ARN").Show()
 	util.ExitOnErr(err)
-	sessionName, err := pterm.DefaultInteractiveTextInput.WithDefaultText("Session Name").Show()
+	sessionName, err := pterm.DefaultInteractiveTextInput.
+		WithDefaultText("Session name").Show()
 	util.ExitOnErr(err)
 	creds, err := stsClient.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         aws.String(strings.Trim(arn, " ")),
+		RoleArn:         aws.String(strings.Trim(roleARN, " ")),
 		RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
 	})
 	util.ExitOnErr(err)
-	profile, err := pterm.DefaultInteractiveTextInput.WithDefaultText("Profile Name").Show()
+	profile, err := pterm.DefaultInteractiveTextInput.
+		WithDefaultText("Create new AWS profile").Show()
 	util.ExitOnErr(err)
 	err = util.WriteCredentials(profile, aws.Credentials{
 		AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
