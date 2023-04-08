@@ -12,36 +12,12 @@
             "program": "${workspaceFolder}/main.go"
         },
         {
-            "name": "Run List",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/main.go",
-            "args": ["codecommit", "pr", "list"]
-        },
-        {
-            "name": "Run Open",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/main.go",
-            "args": ["list", "open"]
-        },
-        {
-            "name": "Run Closed",
-            "type": "go",
-            "request": "launch",
-            "mode": "auto",
-            "program": "${workspaceFolder}/main.go",
-            "args": ["list", "closed", "--profile=default"]
-        },
-        {
             "name": "Testing",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
-            "args": ["codecommit", "pr", "approve"]
+            "args": ["console", "open", "--profile", "secondary"]
         }
     ]
 }

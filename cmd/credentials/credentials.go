@@ -24,11 +24,11 @@ func credentialsCommands() []*cobra.Command {
 }
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	flags.Bool(
-		"gov-cloud",
-		false,
-		"set context as gov-cloud",
-	)
+	// flags.Bool(
+	// 	"gov-cloud",
+	// 	false,
+	// 	"set context as gov-cloud",
+	// )
 }
 
 func NewCmd() *cobra.Command {
