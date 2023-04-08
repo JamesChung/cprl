@@ -43,3 +43,12 @@ func (s *STSClient) GetCallerIdentity() (*sts.GetCallerIdentityOutput, error) {
 	}
 	return out, nil
 }
+
+func (s *STSClient) AssumeRole(params *sts.AssumeRoleInput) (*sts.AssumeRoleOutput, error) {
+	ctx := context.Background()
+	out, err := s.Client.AssumeRole(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}

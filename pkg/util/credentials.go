@@ -3,9 +3,13 @@ package util
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"gopkg.in/ini.v1"
 
 	"github.com/JamesChung/cprl/pkg/client"
-	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 type credentials struct {
@@ -25,6 +29,30 @@ func GetCredentials(profile string) (aws.Credentials, error) {
 		return aws.Credentials{}, err
 	}
 	return creds, nil
+}
+
+func WriteCredentials(section string, creds aws.Credentials) error {
+	// Find user home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	credentialsFile := path.Join(homeDir, ".aws/credentials")
+
+	ini.PrettyFormat = false
+	f, err := ini.Load(credentialsFile)
+	if err != nil {
+		return err
+	}
+	s := f.Section(section)
+	s.NewKey("aws_access_key_id", creds.AccessKeyID)
+	s.NewKey("aws_secret_access_key", creds.SecretAccessKey)
+	s.NewKey("aws_session_token", creds.SessionToken)
+	err = f.SaveTo(credentialsFile)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func StringifyCredentials(creds aws.Credentials) (string, error) {
