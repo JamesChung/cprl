@@ -25,9 +25,15 @@ $ go install github.com/JamesChung/cprl@latest
 $ make local
 ```
 
+## Handy Examples
+
+> `cprl credentials assume` will prompt you for a role ARN and session name and will configure an AWS profile based on the name you provide it.
+
+> `cprl console open --aws-profile=dev` will open your default web browser to the AWS console based on the specified AWS profile.
+
 ## Commands
 
-**[Documentation link](./docs/cprl.md)**
+**The documentation for each command and sub-command can be found [here](./docs/cprl.md).**
 
 ## Config File
 
@@ -36,14 +42,18 @@ $ make local
 ### Schema
 
 ```yaml
-default:                            # cprl will always default to this profile
-  config:                           # profile wide configs
-    aws-profile: <profile name>     # this aws profile will be used by default for commands
-  services:                         # individual service level configurations
+# cprl will always default to this profile if `--profile` is not set
+default:
+  # profile wide configs
+  config:
+    # the default aws profile used unless overrode via `--aws-profile` flag
+    aws-profile: <profile name>
+  # individual service level configurations
+  services:
     console:
       gov-cloud: true | false
-    codecommit:                     # name of a supported service
-      repositories:                 # service specific configurations
+    codecommit:
+      repositories:
         - <repo name>
         - <repo name>
         - <repo name>
