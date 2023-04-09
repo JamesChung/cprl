@@ -10,7 +10,11 @@ import (
 var (
 	shortMessage = "clears AWS credentials"
 
-	example = templates.Examples(`cprl credentials clear`)
+	example = templates.Examples(`
+	$ cprl credentials clear
+	Please select your options:
+	> [✗] dev
+	enter: select | tab: confirm | left: none | right: all| type to filter`)
 )
 
 func NewCmd() *cobra.Command {

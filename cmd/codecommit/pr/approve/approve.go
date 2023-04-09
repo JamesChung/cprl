@@ -24,8 +24,11 @@ var (
 	Approve a PR`)
 
 	example = templates.Examples(`
-	cprl codecommit pr approve
-	`)
+	Approve PR with the aws-profile assigned to the default cprl profile:
+	$ cprl codecommit pr approve
+
+	Approve PR with a specified aws-profile:
+	$ cprl codecommit pr approve --aws-profile=dev`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {

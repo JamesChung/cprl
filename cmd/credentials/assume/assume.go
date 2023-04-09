@@ -19,8 +19,16 @@ var (
 	shortMessage = "assume AWS role"
 
 	example = templates.Examples(`
-	cprl credentials assume
-	cprl credentials assume --aws-profile=dev-account`)
+	Assume role:
+	$ cprl credentials assume
+	Role ARN: <input role ARN here>
+	Session name: <input session name here>
+	New AWS profile name: <input profile name here>
+
+	Assume role bypassing input prompts via flags:
+	$ cprl --aws-profile=main credentials assume \
+		--role-arn=arn:aws:iam::010203040506:role/dev \
+		--session-name=cprl --output-profile=dev`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {

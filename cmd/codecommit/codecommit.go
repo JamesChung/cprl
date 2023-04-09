@@ -13,9 +13,7 @@ import (
 var (
 	shortMessage = "CodeCommit"
 
-	example = templates.Examples(`
-	cprl codecommit pr
-	cprl codecommit pr --aws-profile=dev-account`)
+	example = templates.Examples(`$ cprl codecommit`)
 )
 
 func codeCommitCommands() []*cobra.Command {

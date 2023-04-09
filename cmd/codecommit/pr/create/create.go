@@ -23,8 +23,11 @@ var (
 	Create a PR`)
 
 	example = templates.Examples(`
-	cprl codecommit pr create
-	cprl codecommit pr create --aws-profile=dev-account`)
+	Create PR with the aws-profile assigned to the default cprl profile:
+	$ cprl codecommit pr create
+
+	Create PR with a specified aws-profile:
+	$ cprl codecommit pr create --aws-profile=dev`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {

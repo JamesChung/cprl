@@ -12,9 +12,7 @@ import (
 var (
 	shortMessage = "Manage branches"
 
-	example = templates.Examples(`
-	cprl codecommit branch
-	cprl codecommit branch --aws-profile=dev-account`)
+	example = templates.Examples(`$ cprl codecommit branch`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {

@@ -14,7 +14,25 @@ import (
 var (
 	shortMessage = "outputs AWS credentials"
 
-	example = templates.Examples(`cprl credentials output`)
+	example = templates.Examples(`
+	Basic output:
+	$ cprl credentials output
+	export AWS_ACCESS_KEY_ID=<access key id value>
+	export AWS_SECRET_ACCESS_KEY=<secret access key value>
+	export AWS_SESSION_TOKEN=<session token value>
+
+	JSON output:
+	$ cprl credentials output --json
+	{"AccessKeyID":"<access key id value>","SecretAccessKey":...}
+
+	Source credentials as your current session:
+	$ source <(cprl credentials output --aws-profile=dev)
+	$ aws sts get-caller-identity
+	{
+		"UserId": "TAG0YY70NST6IUO5KA5XB:cprl",
+		"Account": "010203040506",
+		"Arn": "arn:aws:sts::010203040506:assumed-role/dev/cprl"
+	}`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
@@ -46,7 +64,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	if awsProfile == "" {
 		awsProfile, err = pterm.DefaultInteractiveSelect.
-			WithOptions(profiles).Show()
+			WithOptions(profiles).Show("Select a profile")
 		util.ExitOnErr(err)
 	}
 

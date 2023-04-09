@@ -12,9 +12,7 @@ import (
 var (
 	shortMessage = "AWS console"
 
-	example = templates.Examples(`
-	cprl console
-	cprl console --aws-profile=dev-account`)
+	example = templates.Examples(`$ cprl console`)
 )
 
 func consoleCommands() []*cobra.Command {

@@ -15,9 +15,7 @@ import (
 var (
 	shortMessage = "AWS credentials"
 
-	example = templates.Examples(`
-	cprl credentials
-	cprl credentials --aws-profile=dev-account`)
+	example = templates.Examples(`$ cprl credentials`)
 )
 
 func credentialsCommands() []*cobra.Command {

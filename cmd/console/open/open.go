@@ -13,8 +13,11 @@ var (
 	shortMessage = "opens AWS console"
 
 	example = templates.Examples(`
-	cprl console open
-	cprl console open --aws-profile=dev-account`)
+	Open console with default cprl profile:
+	$ cprl console open
+
+	Open console with a specific aws profile:
+	$ cprl console open --aws-profile=dev-`)
 )
 
 func NewCmd() *cobra.Command {

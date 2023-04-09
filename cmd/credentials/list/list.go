@@ -12,7 +12,13 @@ import (
 var (
 	shortMessage = "lists AWS profiles"
 
-	example = templates.Examples(`cprl credentials list`)
+	example = templates.Examples(`
+	$ cprl credentials list
+	├─┬Config
+	│ └──default
+	└─┬Credentials
+ 	⁤  ├──dev
+	⁤  └──test`)
 )
 
 func NewCmd() *cobra.Command {

@@ -16,9 +16,7 @@ import (
 var (
 	shortMessage = "Manage PRs"
 
-	example = templates.Examples(`
-	cprl codecommit pr
-	cprl codecommit pr --aws-profile=dev-account`)
+	example = templates.Examples(`$ cprl codecommit pr`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
