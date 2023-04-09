@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.20
 	github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.20.8
 	github.com/aws/aws-sdk-go-v2/service/codecommit v1.14.9
+	github.com/aws/aws-sdk-go-v2/service/iam v1.19.9
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.8
 	github.com/aws/smithy-go v1.13.5
 	github.com/briandowns/spinner v1.23.0
