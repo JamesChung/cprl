@@ -25,7 +25,7 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	profiles, err := util.GetProfiles()
+	profiles, err := util.GetCredentialsProfiles()
 	util.ExitOnErr(err)
 	selections, err := pterm.DefaultInteractiveMultiselect.
 		WithOptions(profiles).Show()
