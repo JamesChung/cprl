@@ -276,7 +276,7 @@ func GenerateDiffs(ccClient *client.CodeCommitClient, repo string, diffOut []*co
 			wg.Add(1)
 			go func(d types.Difference) {
 				defer wg.Done()
-				sleep := ExponentialBackoff(time.Millisecond*100, time.Second*2)
+				sleep := ExponentialBackoff(time.Millisecond*100, time.Second*3)
 			retry:
 				switch d.ChangeType {
 				case types.ChangeTypeEnumModified:
