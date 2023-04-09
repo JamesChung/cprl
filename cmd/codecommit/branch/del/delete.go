@@ -27,11 +27,6 @@ var (
 
 func setPersistentFlags(flags *pflag.FlagSet) {
 	flags.String(
-		"author-arn",
-		"",
-		"filter by author",
-	)
-	flags.String(
 		"repository",
 		"",
 		"repository name override",
@@ -39,16 +34,16 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmd() *cobra.Command {
-	del := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "delete",
-		Aliases: []string{"d"},
+		Aliases: []string{"d", "del"},
 		Short:   shortMessage,
 		Long:    longMessage,
 		Example: example,
 		Run:     runCmd,
 	}
-	setPersistentFlags(del.PersistentFlags())
-	return del
+	setPersistentFlags(cmd.PersistentFlags())
+	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
