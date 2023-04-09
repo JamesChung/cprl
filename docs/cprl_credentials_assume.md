@@ -11,9 +11,7 @@ cprl credentials assume [flags]
 ```
   Assume role:
   $ cprl credentials assume
-  Role ARN: <input role ARN here>
-  Session name: <input session name here>
-  New AWS profile name: <input profile name here>
+  ...
   
   Assume role bypassing input prompts via flags:
   $ cprl --aws-profile=main credentials assume \
