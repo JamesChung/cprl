@@ -17,7 +17,7 @@ $ go install github.com/JamesChung/cprl@latest
 
 ### Make
 
-> This will build and install the binary to your `~/.local/bin`. Make sure you have that in your `PATH`.
+> This will build and install the binary into your `~/.local/bin`. Make sure you have `~/.local/bin` in your `PATH`.
 
 ```sh
 $ make local
