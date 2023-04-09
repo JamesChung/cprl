@@ -153,5 +153,9 @@ func GetAWSProfile(cmd *cobra.Command) (string, error) {
 			),
 		), nil
 	}
+	// AWS will use the default profile if a profile is not specified. We will
+	// follow the same behavior when --aws-profile is not set and aws-profile is
+	// not specified in the cprl.yaml configuration file.
+	// https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 	return "default", nil
 }
