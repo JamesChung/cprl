@@ -25,11 +25,11 @@ $ make local
 
 ## Handy Examples
 
-> `cprl credentials assume` will prompt you for a role ARN and session name and will configure an AWS profile based on the name you provide it. You can combine `cprl credentials assume` with `cprl credentials export` and make that AWS profile your current active session.
+> `cprl credentials assume` will prompt you for a role ARN and session name and will configure an AWS profile based on the name you provide it. You can combine `cprl credentials assume` with `cprl credentials output` and make that AWS profile your current active session.
 
 ```sh
 $ cprl credentials assume --role-arn=arn:aws:iam::010203040506:role/dev --session-name=cprl --output-profile=dev
-$ source <(cprl credentials export --aws-profile=dev)
+$ source <(cprl credentials output --aws-profile=dev)
 $ aws sts get-caller-identity
 {
     "UserId": "TAG0YY70NST6IUO5KA5XB:cprl",
