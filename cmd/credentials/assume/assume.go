@@ -1,9 +1,11 @@
 package assume
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -21,9 +23,7 @@ var (
 	example = templates.Examples(`
 	Assume role:
 	$ cprl credentials assume
-	Role ARN: <input role ARN here>
-	Session name: <input session name here>
-	New AWS profile name: <input profile name here>
+	...
 
 	Assume role bypassing input prompts via flags:
 	$ cprl --aws-profile=main credentials assume \
@@ -72,9 +72,28 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	roleARN, _ = cmd.LocalFlags().GetString("role-arn")
 	if roleARN == "" {
-		roleARN, err = pterm.DefaultInteractiveTextInput.
-			WithDefaultText("Role ARN").Show()
+		var iamClient *client.IAMClient
+		var roles []types.Role
+		util.Spinner("Getting roles...", func() {
+			iamClient, err = client.NewIAMClient(awsProfile)
+			util.ExitOnErr(err)
+
+			roles, err = iamClient.ListRoles()
+			util.ExitOnErr(err)
+		})
+
+		roleNames := make([]string, 0, 10)
+		roleMap := make(map[string]string)
+		for _, r := range roles {
+			roleNames = append(roleNames, aws.ToString(r.RoleName))
+			roleMap[aws.ToString(r.RoleName)] = aws.ToString(r.Arn)
+		}
+
+		roleName, err := pterm.DefaultInteractiveSelect.
+			WithOptions(roleNames).Show("Select role to assume")
 		util.ExitOnErr(err)
+
+		roleARN = roleMap[roleName]
 	}
 
 	sessionName, _ = cmd.LocalFlags().GetString("session-name")
@@ -84,11 +103,14 @@ func runCmd(cmd *cobra.Command, args []string) {
 		util.ExitOnErr(err)
 	}
 
-	creds, err := stsClient.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         aws.String(strings.Trim(roleARN, " ")),
-		RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
+	var creds *sts.AssumeRoleOutput
+	util.Spinner("Acquiring credentials...", func() {
+		creds, err = stsClient.AssumeRole(&sts.AssumeRoleInput{
+			RoleArn:         aws.String(strings.Trim(roleARN, " ")),
+			RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
+		})
+		util.ExitOnErr(err)
 	})
-	util.ExitOnErr(err)
 
 	outputProfile, _ = cmd.LocalFlags().GetString("output-profile")
 	if outputProfile == "" {
@@ -96,10 +118,14 @@ func runCmd(cmd *cobra.Command, args []string) {
 			WithDefaultText("New AWS profile name").Show()
 		util.ExitOnErr(err)
 	}
-	err = util.WriteCredentials(outputProfile, aws.Credentials{
-		AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
-		SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
-		SessionToken:    aws.ToString(creds.Credentials.SessionToken),
+
+	util.SpinnerWithStatusMsg("Writing credentials...", func() (string, error) {
+		err = util.WriteCredentials(outputProfile, aws.Credentials{
+			AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
+			SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
+			SessionToken:    aws.ToString(creds.Credentials.SessionToken),
+		})
+		util.ExitOnErr(err)
+		return fmt.Sprintf("saved [%s] to credentials", outputProfile), nil
 	})
-	util.ExitOnErr(err)
 }
