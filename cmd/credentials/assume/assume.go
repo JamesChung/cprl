@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
@@ -22,6 +23,24 @@ var (
 	cprl credentials assume --aws-profile=dev-account`)
 )
 
+func setPersistentFlags(flags *pflag.FlagSet) {
+	flags.String(
+		"role-arn",
+		"",
+		"role ARN of the assuming role",
+	)
+	flags.String(
+		"session-name",
+		"",
+		"name of the session",
+	)
+	flags.String(
+		"output-profile",
+		"",
+		"new profile name of the assuming role",
+	)
+}
+
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "assume",
@@ -30,29 +49,46 @@ func NewCmd() *cobra.Command {
 		Example: example,
 		Run:     runCmd,
 	}
+	setPersistentFlags(cmd.PersistentFlags())
 	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
 	awsProfile, err := config.GetAWSProfile(cmd)
 	util.ExitOnErr(err)
+
 	stsClient, err := client.NewSTSClient(awsProfile)
 	util.ExitOnErr(err)
-	roleARN, err := pterm.DefaultInteractiveTextInput.
-		WithDefaultText("Role ARN").Show()
-	util.ExitOnErr(err)
-	sessionName, err := pterm.DefaultInteractiveTextInput.
-		WithDefaultText("Session name").Show()
-	util.ExitOnErr(err)
+
+	var roleARN, sessionName, outputProfile string
+
+	roleARN, _ = cmd.LocalFlags().GetString("role-arn")
+	if roleARN == "" {
+		roleARN, err = pterm.DefaultInteractiveTextInput.
+			WithDefaultText("Role ARN").Show()
+		util.ExitOnErr(err)
+	}
+
+	sessionName, _ = cmd.LocalFlags().GetString("session-name")
+	if sessionName == "" {
+		sessionName, err = pterm.DefaultInteractiveTextInput.
+			WithDefaultText("Session name").Show()
+		util.ExitOnErr(err)
+	}
+
 	creds, err := stsClient.AssumeRole(&sts.AssumeRoleInput{
 		RoleArn:         aws.String(strings.Trim(roleARN, " ")),
 		RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
 	})
 	util.ExitOnErr(err)
-	profile, err := pterm.DefaultInteractiveTextInput.
-		WithDefaultText("Create new AWS profile").Show()
-	util.ExitOnErr(err)
-	err = util.WriteCredentials(profile, aws.Credentials{
+
+	outputProfile, _ = cmd.LocalFlags().GetString("output-profile")
+	if outputProfile == "" {
+		outputProfile, err = pterm.DefaultInteractiveTextInput.
+			WithDefaultText("New AWS profile name").Show()
+		util.ExitOnErr(err)
+	}
+	err = util.WriteCredentials(outputProfile, aws.Credentials{
 		AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
 		SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
 		SessionToken:    aws.ToString(creds.Credentials.SessionToken),
