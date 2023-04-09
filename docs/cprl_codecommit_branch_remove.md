@@ -1,25 +1,25 @@
-## cprl codecommit branch delete
+## cprl codecommit branch remove
 
-Delete branches
+Remove branches
 
 ### Synopsis
 
-Delete a branch
+Removes branches
 
 ```
-cprl codecommit branch delete [flags]
+cprl codecommit branch remove [flags]
 ```
 
 ### Examples
 
 ```
-  cprl codecommit branch delete
+  cprl codecommit branch remove
 ```
 
 ### Options
 
 ```
-  -h, --help                help for delete
+  -h, --help                help for remove
       --repository string   repository name override
 ```
 
