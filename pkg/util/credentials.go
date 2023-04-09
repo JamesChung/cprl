@@ -31,7 +31,43 @@ func GetCredentials(profile string) (aws.Credentials, error) {
 	return creds, nil
 }
 
-func GetProfiles() ([]string, error) {
+func GetAllProfiles() ([]string, error) {
+	configProfiles, err := GetConfigProfiles()
+	if err != nil {
+		return nil, err
+	}
+	credentialsProfiles, err := GetCredentialsProfiles()
+	if err != nil {
+		return nil, err
+	}
+	pMap := make(map[string]struct{}, len(configProfiles)+len(credentialsProfiles))
+	profiles := make([]string, 0, len(configProfiles)+len(credentialsProfiles))
+	for _, p := range configProfiles {
+		pMap[p] = struct{}{}
+	}
+	for _, p := range credentialsProfiles {
+		pMap[p] = struct{}{}
+	}
+	for k := range pMap {
+		profiles = append(profiles, k)
+	}
+	return profiles, nil
+}
+
+func GetConfigProfiles() ([]string, error) {
+	configFile, err := getConfigFilePath()
+	if err != nil {
+		return nil, err
+	}
+	ini.PrettyFormat = false
+	f, err := ini.Load(configFile)
+	if err != nil {
+		return nil, err
+	}
+	return f.SectionStrings()[1:], nil
+}
+
+func GetCredentialsProfiles() ([]string, error) {
 	credentialsFile, err := getCredentialsFilePath()
 	if err != nil {
 		return nil, err
@@ -42,6 +78,16 @@ func GetProfiles() ([]string, error) {
 		return nil, err
 	}
 	return f.SectionStrings()[1:], nil
+}
+
+func getConfigFilePath() (string, error) {
+	// Find user home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	configFile := path.Join(homeDir, ".aws/config")
+	return configFile, nil
 }
 
 func getCredentialsFilePath() (string, error) {
