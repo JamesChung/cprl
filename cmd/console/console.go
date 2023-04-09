@@ -37,6 +37,6 @@ func NewCmd() *cobra.Command {
 		Example: example,
 	}
 	setPersistentFlags(cmd.PersistentFlags())
-	util.AddGroup(cmd, "Console:", consoleCommands()...)
+	util.AddGroup(cmd, "Commands:", consoleCommands()...)
 	return cmd
 }
