@@ -1,5 +1,3 @@
-# [WARNING] In Early Development
-
 # cprl
 
 ## How to Install
@@ -27,13 +25,31 @@ $ make local
 
 ## Handy Examples
 
-> `cprl credentials assume` will prompt you for a role ARN and session name and will configure an AWS profile based on the name you provide it.
+> `cprl credentials assume` will prompt you for a role ARN and session name and will configure an AWS profile based on the name you provide it. You can combine `cprl credentials assume` with `cprl credentials export` and make that AWS profile your current active session.
+
+```sh
+$ cprl credentials assume --role-arn=arn:aws:iam::010203040506:role/dev --session-name=cprl --output-profile=dev
+$ source <(cprl credentials export --aws-profile=dev)
+$ aws sts get-caller-identity
+{
+    "UserId": "TAG0YY70NST6IUO5KA5XB:cprl",
+    "Account": "010203040506",
+    "Arn": "arn:aws:sts::010203040506:assumed-role/dev/cprl"
+}
+```
 
 > `cprl console open --aws-profile=dev` will open your default web browser to the AWS console based on the specified AWS profile.
 
 ## Commands
 
-**The documentation for each command and sub-command can be found [here](./docs/cprl.md).**
+**The documentation for each command and sub-command can be found in [./docs](./docs/cprl.md).**
+
+### Help with auto-completions
+
+* [bash completion](./docs/cprl_completion_bash.md)
+* [fish completion](./docs/cprl_completion_fish.md)
+* [zsh completion](./docs/cprl_completion_zsh.md)
+* [powershell completion](./docs/cprl_completion_powershell.md)
 
 ## Config File
 
