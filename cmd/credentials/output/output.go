@@ -1,4 +1,4 @@
-package export
+package output
 
 import (
 	"fmt"
@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	shortMessage = "exports AWS credentials"
+	shortMessage = "outputs AWS credentials"
 
-	example = templates.Examples(`cprl credentials export`)
+	example = templates.Examples(`cprl credentials output`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
@@ -27,8 +27,8 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "export",
-		Aliases: []string{"e", "ex", "exp", "expo"},
+		Use:     "output",
+		Aliases: []string{"o", "ou", "out"},
 		Short:   shortMessage,
 		Example: example,
 		Run:     runCmd,
