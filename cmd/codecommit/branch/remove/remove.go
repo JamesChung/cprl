@@ -1,4 +1,4 @@
-package del
+package remove
 
 import (
 	"fmt"
@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	shortMessage = "Delete branches"
+	shortMessage = "Remove branches"
 
 	longMessage = templates.LongDesc(`
-	Delete a branch`)
+	Removes branches`)
 
 	example = templates.Examples(`
-	cprl codecommit branch delete
+	cprl codecommit branch remove
 	`)
 )
 
@@ -35,8 +35,8 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "delete",
-		Aliases: []string{"d", "del"},
+		Use:     "remove",
+		Aliases: []string{"r", "rem"},
 		Short:   shortMessage,
 		Long:    longMessage,
 		Example: example,
@@ -73,28 +73,28 @@ func runCmd(cmd *cobra.Command, args []string) {
 	})
 	util.ExitOnErr(err)
 
-	// Prompt for branches to delete
+	// Prompt for branches to remove
 	branchSelections, err := pterm.DefaultInteractiveMultiselect.
-		WithOptions(branches).Show("Select branches to delete")
+		WithOptions(branches).Show("Select branches to remove")
 	util.ExitOnErr(err)
 
-	// Delete branches
+	// Remove branches
 	var results []util.Result[string]
-	util.Spinner("Deleting...", func() {
+	util.Spinner("Removing...", func() {
 		results = util.DeleteBranches(ccClient, repo, branchSelections)
 	})
 
 	failCount := 0
 	for _, r := range results {
 		if r.Err != nil {
-			pterm.Error.Printf("Failed to delete branch [%s]\n", r.Result)
+			pterm.Error.Printf("Failed to remove branch [%s]\n", r.Result)
 			failCount++
 			continue
 		}
-		pterm.Success.Printf("Successfully deleted branch [%s]\n", r.Result)
+		pterm.Success.Printf("Successfully removed branch [%s]\n", r.Result)
 	}
 
 	if failCount > 0 {
-		util.ExitOnErr(fmt.Errorf("Failed to delete %d branches\n", failCount))
+		util.ExitOnErr(fmt.Errorf("Failed to remove %d branches\n", failCount))
 	}
 }

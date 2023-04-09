@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	"github.com/JamesChung/cprl/cmd/codecommit/branch/del"
+	"github.com/JamesChung/cprl/cmd/codecommit/branch/remove"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -23,7 +23,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 
 func branchCommands() []*cobra.Command {
 	return []*cobra.Command{
-		del.NewCmd(),
+		remove.NewCmd(),
 	}
 }
 
