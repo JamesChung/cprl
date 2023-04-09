@@ -13,7 +13,11 @@ cprl codecommit pr approve [flags]
 ### Examples
 
 ```
-  cprl codecommit pr approve
+  Approve PR with the aws-profile assigned to the default cprl profile:
+  $ cprl codecommit pr approve
+  
+  Approve PR with a specified aws-profile:
+  $ cprl codecommit pr approve --aws-profile=dev
 ```
 
 ### Options

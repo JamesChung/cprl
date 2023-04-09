@@ -5,8 +5,7 @@ Manage branches
 ### Examples
 
 ```
-  cprl codecommit branch
-  cprl codecommit branch --aws-profile=dev-account
+  $ cprl codecommit branch
 ```
 
 ### Options

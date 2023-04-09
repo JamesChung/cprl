@@ -9,7 +9,12 @@ cprl credentials list [flags]
 ### Examples
 
 ```
-  cprl credentials list
+  $ cprl credentials list
+  ├─┬Config
+  │ └──default
+  └─┬Credentials
+  ⁤  ├──dev
+  ⁤  └──test
 ```
 
 ### Options

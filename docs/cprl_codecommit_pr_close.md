@@ -13,7 +13,11 @@ cprl codecommit pr close [flags]
 ### Examples
 
 ```
-  cprl codecommit pr close
+  Close PR with the aws-profile assigned to the default cprl profile:
+  $ cprl codecommit pr close
+  
+  Close PR with a specified aws-profile:
+  $ cprl codecommit pr close --aws-profile=dev
 ```
 
 ### Options

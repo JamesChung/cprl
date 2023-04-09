@@ -5,8 +5,7 @@ AWS console
 ### Examples
 
 ```
-  cprl console
-  cprl console --aws-profile=dev-account
+  $ cprl console
 ```
 
 ### Options

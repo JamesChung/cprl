@@ -13,7 +13,11 @@ cprl codecommit branch remove [flags]
 ### Examples
 
 ```
-  cprl codecommit branch remove
+  Remove branch with the aws-profile assigned to the default cprl profile:
+  $ cprl codecommit branch remove
+  
+  Remove branch with a specified aws-profile:
+  $ cprl codecommit branch remove --aws-profile=dev
 ```
 
 ### Options

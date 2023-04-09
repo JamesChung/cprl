@@ -5,8 +5,7 @@ CodeCommit
 ### Examples
 
 ```
-  cprl codecommit pr
-  cprl codecommit pr --aws-profile=dev-account
+  $ cprl codecommit
 ```
 
 ### Options

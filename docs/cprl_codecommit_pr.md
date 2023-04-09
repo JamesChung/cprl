@@ -5,8 +5,7 @@ Manage PRs
 ### Examples
 
 ```
-  cprl codecommit pr
-  cprl codecommit pr --aws-profile=dev-account
+  $ cprl codecommit pr
 ```
 
 ### Options

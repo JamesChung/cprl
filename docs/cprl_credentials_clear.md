@@ -9,7 +9,10 @@ cprl credentials clear [flags]
 ### Examples
 
 ```
-  cprl credentials clear
+  $ cprl credentials clear
+  Please select your options:
+  > [✗] dev
+  enter: select | tab: confirm | left: none | right: all| type to filter
 ```
 
 ### Options

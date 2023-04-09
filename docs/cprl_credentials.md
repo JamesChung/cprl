@@ -5,8 +5,7 @@ AWS credentials
 ### Examples
 
 ```
-  cprl credentials
-  cprl credentials --aws-profile=dev-account
+  $ cprl credentials
 ```
 
 ### Options
