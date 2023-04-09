@@ -141,6 +141,14 @@ func ClearProfile(profile string) error {
 }
 
 func StringifyCredentials(creds aws.Credentials) (string, error) {
+	b, err := json.Marshal(creds)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func StringifySessionCredentials(creds aws.Credentials) (string, error) {
 	b, err := json.Marshal(credentials{
 		AccessKeyID:     creds.AccessKeyID,
 		SecretAccessKey: creds.SecretAccessKey,

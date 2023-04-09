@@ -21,7 +21,7 @@ func AWSHostname(isGov bool) string {
 }
 
 func GenerateLoginURL(creds aws.Credentials, isGov bool) (url.URL, error) {
-	c, err := StringifyCredentials(creds)
+	c, err := StringifySessionCredentials(creds)
 	if err != nil {
 		return url.URL{}, err
 	}
