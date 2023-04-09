@@ -58,7 +58,12 @@ type ProfileConfig struct {
 }
 
 type ProfileServices struct {
+	Console    ProfileServicesConsole    `yaml:"console"`
 	CodeCommit ProfileServicesCodeCommit `yaml:"codecommit"`
+}
+
+type ProfileServicesConsole struct {
+	GovCloud bool `yaml:"gov-cloud"`
 }
 
 type ProfileServicesCodeCommit struct {
@@ -80,6 +85,9 @@ func Create() error {
 				AWSProfile: "default",
 			},
 			Services: ProfileServices{
+				Console: ProfileServicesConsole{
+					GovCloud: false,
+				},
 				CodeCommit: ProfileServicesCodeCommit{
 					Repositories: []string{},
 				},
