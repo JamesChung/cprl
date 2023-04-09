@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - added `codecommit` command
   - added `branch` command
-    - added `delete` command
+    - added `remove` command
   - added `pr` command
     - added `approve` command
     - added `closes` command
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added `credentials` command
   - added `assume` command
   - added `clear` command
-  - added `export` command
+  - added `output` command
   - added `list` command
 
 ### Fixed
