@@ -26,11 +26,7 @@ func credentialsCommands() []*cobra.Command {
 }
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// flags.Bool(
-	// 	"gov-cloud",
-	// 	false,
-	// 	"set context as gov-cloud",
-	// )
+	// TODO Possibly revisit and add flags if needed
 }
 
 func NewCmd() *cobra.Command {

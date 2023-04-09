@@ -26,11 +26,7 @@ func codeCommitCommands() []*cobra.Command {
 }
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// flags.String(
-	// 	"author-arn",
-	// 	"",
-	// 	"",
-	// )
+	// TODO Possibly revisit and add flags if needed
 }
 
 func NewCmd() *cobra.Command {

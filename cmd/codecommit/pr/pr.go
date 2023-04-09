@@ -22,7 +22,7 @@ var (
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO
+	// TODO Possibly revisit and add flags if needed
 }
 
 func prCommands() []*cobra.Command {
