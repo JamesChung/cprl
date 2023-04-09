@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 
+	"github.com/JamesChung/cprl/cmd/cloudwatch"
 	"github.com/JamesChung/cprl/cmd/codecommit"
 	"github.com/JamesChung/cprl/cmd/console"
 	"github.com/JamesChung/cprl/cmd/credentials"
@@ -15,9 +16,10 @@ import (
 
 func cprlCommands() []*cobra.Command {
 	return []*cobra.Command{
-		credentials.NewCmd(),
-		console.NewCmd(),
+		cloudwatch.NewCmd(),
 		codecommit.NewCmd(),
+		console.NewCmd(),
+		credentials.NewCmd(),
 	}
 }
 
