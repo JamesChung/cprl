@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added `credentials` command
   - added `assume` command
   - added `clear` command
+  - added `export` command
+  - added `list` command
 
 ### Fixed
 
