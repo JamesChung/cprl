@@ -7,6 +7,7 @@ import (
 
 	"github.com/JamesChung/cprl/cmd/credentials/assume"
 	"github.com/JamesChung/cprl/cmd/credentials/clear"
+	"github.com/JamesChung/cprl/cmd/credentials/export"
 	"github.com/JamesChung/cprl/cmd/credentials/list"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -23,6 +24,7 @@ func credentialsCommands() []*cobra.Command {
 	return []*cobra.Command{
 		assume.NewCmd(),
 		clear.NewCmd(),
+		export.NewCmd(),
 		list.NewCmd(),
 	}
 }
