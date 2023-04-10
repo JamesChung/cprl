@@ -1,7 +1,9 @@
 package open
 
 import (
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
@@ -20,22 +22,47 @@ var (
 	$ cprl console open --aws-profile=dev-`)
 )
 
+func setPersistentFlags(flags *pflag.FlagSet) {
+	flags.BoolP(
+		"prompt",
+		"p",
+		false,
+		"prompt user with suggested profiles",
+	)
+}
+
 func NewCmd() *cobra.Command {
-	consoleCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "open",
 		Aliases: []string{"o"},
 		Short:   shortMessage,
 		Example: example,
 		Run:     runCmd,
 	}
-	return consoleCmd
+	setPersistentFlags(cmd.PersistentFlags())
+	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
 	profile, err := config.GetProfile(cmd)
 	util.ExitOnErr(err)
-	awsProfile, err := config.GetAWSProfile(cmd)
+
+	var awsProfile string
+	prompt, err := cmd.Flags().GetBool("prompt")
 	util.ExitOnErr(err)
+	if prompt {
+		profiles, err := util.GetAllProfiles()
+		if err != nil {
+			util.ExitOnErr(err)
+		}
+		awsProfile, err = pterm.DefaultInteractiveSelect.
+			WithOptions(profiles).Show("Select a profile")
+		util.ExitOnErr(err)
+	} else {
+		awsProfile, err = config.GetAWSProfile(cmd)
+		util.ExitOnErr(err)
+	}
+
 	isGovCloud, err := console.IsGovCloud(cmd, profile)
 	util.ExitOnErr(err)
 	creds, err := util.GetCredentials(awsProfile)
