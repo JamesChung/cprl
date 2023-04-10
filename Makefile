@@ -8,6 +8,7 @@ test:
 
 .PHONY:release
 release:
+	@git push
 	goreleaser release --clean
 
 .PHONY: tag
