@@ -2,7 +2,6 @@ package branch
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/cmd/codecommit/branch/remove"
@@ -14,10 +13,6 @@ var (
 
 	example = templates.Examples(`$ cprl codecommit branch`)
 )
-
-func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO Possibly revisit and add flags if needed
-}
 
 func branchCommands() []*cobra.Command {
 	return []*cobra.Command{
@@ -32,7 +27,6 @@ func NewCmd() *cobra.Command {
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(cmd.Flags())
 	util.AddGroup(cmd, "Commands:", branchCommands()...)
 	return cmd
 }

@@ -2,7 +2,6 @@ package codecommit
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/cmd/codecommit/branch"
@@ -23,10 +22,6 @@ func codeCommitCommands() []*cobra.Command {
 	}
 }
 
-func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO Possibly revisit and add flags if needed
-}
-
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "codecommit",
@@ -34,7 +29,6 @@ func NewCmd() *cobra.Command {
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(cmd.PersistentFlags())
 	util.AddGroup(cmd, "Commands:", codeCommitCommands()...)
 	return cmd
 }

@@ -2,7 +2,6 @@ package pr
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/cmd/codecommit/pr/approve"
@@ -18,10 +17,6 @@ var (
 
 	example = templates.Examples(`$ cprl codecommit pr`)
 )
-
-func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO Possibly revisit and add flags if needed
-}
 
 func prCommands() []*cobra.Command {
 	return []*cobra.Command{
@@ -39,7 +34,6 @@ func NewCmd() *cobra.Command {
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(cmd.Flags())
 	util.AddGroup(cmd, "Commands:", prCommands()...)
 	return cmd
 }
