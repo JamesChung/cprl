@@ -21,3 +21,6 @@ local:
 .PHONY: docs
 docs:
 	CPRL_DOCS=./docs go run main.go
+	@git restore --staged .
+	@git add ./docs
+	@git commit -m "docs: :memo: update documentation"
