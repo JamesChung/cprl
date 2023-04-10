@@ -12,10 +12,10 @@ import (
 	"github.com/JamesChung/cprl/pkg/client"
 )
 
-type credentials struct {
-	AccessKeyID     string `json:"sessionId"`
-	SecretAccessKey string `json:"sessionKey"`
-	SessionToken    string `json:"sessionToken"`
+type sessionCredentials struct {
+	SessionID    string `json:"sessionId"`
+	SessionKey   string `json:"sessionKey"`
+	SessionToken string `json:"sessionToken"`
 }
 
 func GetCredentials(profile string) (aws.Credentials, error) {
@@ -149,10 +149,10 @@ func StringifyCredentials(creds aws.Credentials) (string, error) {
 }
 
 func StringifySessionCredentials(creds aws.Credentials) (string, error) {
-	b, err := json.Marshal(credentials{
-		AccessKeyID:     creds.AccessKeyID,
-		SecretAccessKey: creds.SecretAccessKey,
-		SessionToken:    creds.SessionToken,
+	b, err := json.Marshal(sessionCredentials{
+		SessionID:    creds.AccessKeyID,
+		SessionKey:   creds.SecretAccessKey,
+		SessionToken: creds.SessionToken,
 	})
 	if err != nil {
 		return "", err
