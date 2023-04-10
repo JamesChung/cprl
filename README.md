@@ -42,6 +42,23 @@ $ aws sts get-caller-identity
 
 ## Commands
 
+- [`codecommit`](./docs/cprl_codecommit.md)
+  - [`branch`](./docs/cprl_codecommit_branch.md)
+    - [`remove`](./docs/cprl_codecommit_branch_remove.md)
+  - [`pr`](./docs/cprl_codecommit_pr.md)
+    - [`approve`](./docs/cprl_codecommit_pr_approve.md)
+    - [`closes`](./docs/cprl_codecommit_pr_close.md)
+    - [`create`](./docs/cprl_codecommit_pr_create.md)
+    - [`diff`](./docs/cprl_codecommit_pr_diff.md)
+    - [`list`](./docs/cprl_codecommit_pr_list.md)
+- [`console`](./docs/cprl_console.md)
+  - [`open`](./docs/cprl_console_open.md)
+- [`credentials`](./docs/cprl_credentials.md)
+  - [`assume`](./docs/cprl_credentials_assume.md)
+  - [`clear`](./docs/cprl_credentials_clear.md)
+  - [`output`](./docs/cprl_credentials_output.md)
+  - [`list`](./docs/cprl_credentials_list.md)
+
 **The documentation for each command and sub-command can be found in [./docs](./docs/cprl.md).**
 
 ### Help with auto-completions
