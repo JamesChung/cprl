@@ -112,9 +112,9 @@ func unixOutput(creds aws.Credentials) {
 }
 
 func powershellOutput(creds aws.Credentials) {
-	fmt.Printf("$Env:AWS_ACCESS_KEY_ID=%s\n", creds.AccessKeyID)
-	fmt.Printf("$Env:AWS_SECRET_ACCESS_KEY=%s\n", creds.SecretAccessKey)
-	fmt.Printf("$Env:AWS_SESSION_TOKEN=%s\n", creds.SessionToken)
+	fmt.Printf("$Env:AWS_ACCESS_KEY_ID=\"%s\"\n", creds.AccessKeyID)
+	fmt.Printf("$Env:AWS_SECRET_ACCESS_KEY=\"%s\"\n", creds.SecretAccessKey)
+	fmt.Printf("$Env:AWS_SESSION_TOKEN=\"%s\"\n", creds.SessionToken)
 }
 
 func winCommandPromptOutput(creds aws.Credentials) {
