@@ -19,7 +19,7 @@ var (
 	$ cprl console open
 
 	Open console with a specific aws profile:
-	$ cprl console open --aws-profile=dev-`)
+	$ cprl console open --aws-profile=dev`)
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
