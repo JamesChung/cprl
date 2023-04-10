@@ -3,6 +3,7 @@ package output
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -40,6 +41,12 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 		"json",
 		false,
 		"output in json format",
+	)
+	flags.StringP(
+		"style",
+		"s",
+		"unix",
+		"output style [unix, powershell, windows]",
 	)
 }
 
@@ -79,8 +86,39 @@ func runCmd(cmd *cobra.Command, args []string) {
 		fmt.Println(strCreds)
 		return
 	}
+	outputType, err := cmd.Flags().GetString("style")
+	util.ExitOnErr(err)
 
+	switch outputType {
+	case "unix":
+		unixOutput(creds)
+	case "powershell":
+		powershellOutput(creds)
+	case "windows":
+		winCommandPromptOutput(creds)
+	default:
+		util.ExitOnErr(
+			fmt.Errorf(
+				"unrecognized option --style [%s], can be [unix, powershell, windows]",
+				outputType),
+		)
+	}
+}
+
+func unixOutput(creds aws.Credentials) {
 	fmt.Printf("export AWS_ACCESS_KEY_ID=%s\n", creds.AccessKeyID)
 	fmt.Printf("export AWS_SECRET_ACCESS_KEY=%s\n", creds.SecretAccessKey)
 	fmt.Printf("export AWS_SESSION_TOKEN=%s\n", creds.SessionToken)
+}
+
+func powershellOutput(creds aws.Credentials) {
+	fmt.Printf("$Env:AWS_ACCESS_KEY_ID=%s\n", creds.AccessKeyID)
+	fmt.Printf("$Env:AWS_SECRET_ACCESS_KEY=%s\n", creds.SecretAccessKey)
+	fmt.Printf("$Env:AWS_SESSION_TOKEN=%s\n", creds.SessionToken)
+}
+
+func winCommandPromptOutput(creds aws.Credentials) {
+	fmt.Printf("set AWS_ACCESS_KEY_ID=%s\n", creds.AccessKeyID)
+	fmt.Printf("set AWS_SECRET_ACCESS_KEY=%s\n", creds.SecretAccessKey)
+	fmt.Printf("set AWS_SESSION_TOKEN=%s\n", creds.SessionToken)
 }
