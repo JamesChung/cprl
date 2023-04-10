@@ -3,6 +3,9 @@ package util
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path"
 
@@ -51,6 +54,9 @@ func GetAllProfiles() ([]string, error) {
 	for k := range pMap {
 		profiles = append(profiles, k)
 	}
+	if len(profiles) == 0 {
+		return nil, fmt.Errorf("no profiles were found in config and credentials")
+	}
 	return profiles, nil
 }
 
@@ -62,6 +68,9 @@ func GetConfigProfiles() ([]string, error) {
 	ini.PrettyFormat = false
 	f, err := ini.Load(configFile)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return []string{}, nil
+		}
 		return nil, err
 	}
 	return f.SectionStrings()[1:], nil
@@ -75,6 +84,9 @@ func GetCredentialsProfiles() ([]string, error) {
 	ini.PrettyFormat = false
 	f, err := ini.Load(credentialsFile)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return []string{}, nil
+		}
 		return nil, err
 	}
 	return f.SectionStrings()[1:], nil
