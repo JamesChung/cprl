@@ -2,10 +2,9 @@ package cloudwatch
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	// "github.com/JamesChung/cprl/cmd/cloudwatch/logs"
+	"github.com/JamesChung/cprl/cmd/cloudwatch/logs"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -17,12 +16,8 @@ var (
 
 func cloudwatchCommands() []*cobra.Command {
 	return []*cobra.Command{
-		// logs.NewCmd(),
+		logs.NewCmd(),
 	}
-}
-
-func setPersistentFlags(flags *pflag.FlagSet) {
-	// TODO:
 }
 
 func NewCmd() *cobra.Command {
@@ -32,7 +27,6 @@ func NewCmd() *cobra.Command {
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(cmd.PersistentFlags())
 	util.AddGroup(cmd, "Commands:", cloudwatchCommands()...)
 	return cmd
 }
