@@ -45,7 +45,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmd() *cobra.Command {
-	approve := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "approve",
 		Aliases: []string{"a"},
 		Short:   shortMessage,
@@ -53,8 +53,8 @@ func NewCmd() *cobra.Command {
 		Example: example,
 		Run:     runCmd,
 	}
-	setPersistentFlags(approve.PersistentFlags())
-	return approve
+	setPersistentFlags(cmd.PersistentFlags())
+	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {

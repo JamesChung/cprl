@@ -47,7 +47,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmd() *cobra.Command {
-	diff := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "diff",
 		Aliases: []string{"d"},
 		Short:   shortMessage,
@@ -55,8 +55,8 @@ func NewCmd() *cobra.Command {
 		Example: example,
 		Run:     runCmd,
 	}
-	setPersistentFlags(diff.PersistentFlags())
-	return diff
+	setPersistentFlags(cmd.PersistentFlags())
+	return cmd
 }
 
 func runCmd(cmd *cobra.Command, args []string) {

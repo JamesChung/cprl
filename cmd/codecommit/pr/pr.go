@@ -34,12 +34,12 @@ func prCommands() []*cobra.Command {
 }
 
 func NewCmd() *cobra.Command {
-	prCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "pr",
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(prCmd.Flags())
-	util.AddGroup(prCmd, "Commands:", prCommands()...)
-	return prCmd
+	setPersistentFlags(cmd.Flags())
+	util.AddGroup(cmd, "Commands:", prCommands()...)
+	return cmd
 }

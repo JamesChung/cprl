@@ -28,13 +28,13 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 }
 
 func NewCmd() *cobra.Command {
-	codeCommitCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "codecommit",
 		Aliases: []string{"cc"},
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(codeCommitCmd.PersistentFlags())
-	util.AddGroup(codeCommitCmd, "Commands:", codeCommitCommands()...)
-	return codeCommitCmd
+	setPersistentFlags(cmd.PersistentFlags())
+	util.AddGroup(cmd, "Commands:", codeCommitCommands()...)
+	return cmd
 }

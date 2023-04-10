@@ -26,13 +26,13 @@ func branchCommands() []*cobra.Command {
 }
 
 func NewCmd() *cobra.Command {
-	prCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "branch",
 		Aliases: []string{"br"},
 		Short:   shortMessage,
 		Example: example,
 	}
-	setPersistentFlags(prCmd.Flags())
-	util.AddGroup(prCmd, "Commands:", branchCommands()...)
-	return prCmd
+	setPersistentFlags(cmd.Flags())
+	util.AddGroup(cmd, "Commands:", branchCommands()...)
+	return cmd
 }
