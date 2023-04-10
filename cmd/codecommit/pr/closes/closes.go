@@ -82,8 +82,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PRs for a given repository
 	var prs []*codecommit.GetPullRequestOutput
 	util.Spinner("Retrieving PRs...", func() {
-		prs, err = util.GetPullRequests(util.PullRequestInput{
-			Client:       ccClient,
+		prs, err = ccClient.GetPullRequests(client.PullRequestInput{
 			AuthorARN:    authorARN,
 			Repositories: []string{repo},
 			Status:       types.PullRequestStatusEnumOpen,
@@ -102,6 +101,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 		li = append(li, s)
 		prMap[s] = prs[i]
 	}
+	if len(li) == 0 {
+		util.ExitOnErr(fmt.Errorf("[%s] has no available PRs", repo))
+	}
 
 	// Prompt for PRs to close
 	prSelections, err := pterm.DefaultInteractiveMultiselect.
@@ -109,9 +111,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Close PRs
-	var res []util.Result[string]
+	var res []client.Result[string]
 	util.Spinner("Closing...", func() {
-		res = util.ClosePRs(ccClient, prMap, prSelections)
+		res = ccClient.ClosePRs(prMap, prSelections)
 	})
 
 	// Output PR close results

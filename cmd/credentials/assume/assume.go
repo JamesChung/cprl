@@ -125,7 +125,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 			SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
 			SessionToken:    aws.ToString(creds.Credentials.SessionToken),
 		})
-		util.ExitOnErr(err)
-		return fmt.Sprintf("saved [%s] to credentials", outputProfile), nil
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("[%s] was saved to credentials", outputProfile), nil
 	})
 }

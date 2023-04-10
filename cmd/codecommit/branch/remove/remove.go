@@ -82,9 +82,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Remove branches
-	var results []util.Result[string]
+	var results []client.Result[string]
 	util.Spinner("Removing...", func() {
-		results = util.DeleteBranches(ccClient, repo, branchSelections)
+		results = ccClient.DeleteBranches(repo, branchSelections)
 	})
 
 	failCount := 0

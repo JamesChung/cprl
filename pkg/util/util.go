@@ -10,17 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Result[T any] struct {
-	Result T
-	Err    error
-}
-
-type ResultMap[T any, K comparable, V any] struct {
-	Result T
-	Err    error
-	Map    map[K]V
-}
-
 func AddGroup(parent *cobra.Command, title string, cmds ...*cobra.Command) {
 	group := &cobra.Group{
 		Title: title,
@@ -80,23 +69,9 @@ func SpinnerWithStatusMsg(startMsg string, closure SpinnerMsgFunc) {
 	Spinner(startMsg, func() { str, err = closure() })
 	switch {
 	case err != nil:
-		pterm.Error.Println(err)
-		return
+		ExitOnErr(err)
 	case str != "":
 		pterm.Success.Println(str)
 		return
-	}
-}
-
-func ExponentialBackoff(init, limit time.Duration) func() {
-	internalTime := init
-	return func() {
-		time.Sleep(internalTime)
-		switch {
-		case internalTime*2 > limit:
-			internalTime = limit
-		case internalTime*2 <= limit:
-			internalTime *= 2
-		}
 	}
 }

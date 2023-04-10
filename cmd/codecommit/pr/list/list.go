@@ -89,10 +89,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PR IDs
 	var prIDs [][]string
 	util.Spinner("Getting PR IDs...", func() {
-		prIDs, err = util.GetPullRequestIDs(
-			util.PullRequestInput{
+		prIDs, err = ccClient.GetPullRequestIDs(
+			client.PullRequestInput{
 				AuthorARN:    authorARN,
-				Client:       ccClient,
 				Repositories: repoSelections,
 				Status:       status,
 			})
@@ -102,7 +101,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PR information
 	var prInfoList []*codecommit.GetPullRequestOutput
 	util.Spinner("Getting PR Information...", func() {
-		prInfoList, err = util.GetPullRequestInfoFromIDs(ccClient, prIDs)
+		prInfoList, err = ccClient.GetPullRequestInfoFromIDs(prIDs)
 	})
 	util.ExitOnErr(err)
 

@@ -119,8 +119,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		}
 		res, err := ccClient.CreatePR(targets, title, desc)
 		if err != nil {
-			// Return and let outer scope handle error
-			return "", nil
+			return "", err
 		}
 
 		return fmt.Sprintf(
@@ -128,5 +127,4 @@ func runCmd(cmd *cobra.Command, args []string) {
 			aws.ToString(res.PullRequest.PullRequestId),
 		), nil
 	})
-	util.ExitOnErr(err)
 }

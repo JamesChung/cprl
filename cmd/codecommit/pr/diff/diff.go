@@ -84,8 +84,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PRs for a given repository
 	var prs []*codecommit.GetPullRequestOutput
 	util.Spinner("Retrieving PRs...", func() {
-		prs, err = util.GetPullRequests(util.PullRequestInput{
-			Client:       ccClient,
+		prs, err = ccClient.GetPullRequests(client.PullRequestInput{
 			AuthorARN:    authorARN,
 			Repositories: []string{repo},
 			Status:       types.PullRequestStatusEnumOpen,
@@ -124,9 +123,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Concurrently generate individual file diffs
-	var results, badResults []util.Result[[]byte]
+	var results, badResults []client.Result[[]byte]
 	util.Spinner("Generating Differences...", func() {
-		results = util.GenerateDiffs(ccClient, repo, diffOut)
+		results = ccClient.GenerateDiffs(repo, diffOut)
 	})
 
 	// Prompt user for the name of the diff file
