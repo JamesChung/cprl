@@ -134,7 +134,7 @@ func WriteCredentials(section string, creds aws.Credentials) error {
 	return nil
 }
 
-func ClearProfile(profile string) error {
+func ClearProfiles(profiles []string) error {
 	credentialsFile, err := getCredentialsFilePath()
 	if err != nil {
 		return err
@@ -144,7 +144,9 @@ func ClearProfile(profile string) error {
 	if err != nil {
 		return err
 	}
-	f.DeleteSection(profile)
+	for _, profile := range profiles {
+		f.DeleteSection(profile)
+	}
 	err = f.SaveTo(credentialsFile)
 	if err != nil {
 		return err

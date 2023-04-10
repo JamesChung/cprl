@@ -34,10 +34,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 	selections, err := pterm.DefaultInteractiveMultiselect.
 		WithOptions(profiles).Show()
 	util.ExitOnErr(err)
-	for _, p := range selections {
-		err = util.ClearProfile(p)
-		if err != nil {
-			util.ExitOnErr(err)
-		}
-	}
+	err = util.ClearProfiles(selections)
+	util.ExitOnErr(err)
 }

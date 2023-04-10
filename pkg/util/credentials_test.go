@@ -41,7 +41,7 @@ func TestGetAllProfiles(t *testing.T) {
 }
 
 func TestClearProfile(t *testing.T) {
-	err := ClearProfile("yo")
+	err := ClearProfiles([]string{"yo"})
 	if err != nil {
 		t.Fail()
 	}
