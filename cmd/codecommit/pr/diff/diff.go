@@ -115,9 +115,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get diff metadata info between targets from CodeCommit
 	diffOut, err := util.Spinner("Getting Differences...", func() ([]*codecommit.GetDifferencesOutput, error) {
 		var err error
-		diff := make([]*codecommit.GetDifferencesOutput, 0, 10)
+		d := make([]*codecommit.GetDifferencesOutput, 0, 10)
 		for _, t := range prMap[prSelection].PullRequest.PullRequestTargets {
-			diff, err = ccClient.GetDifferences(
+			d, err = ccClient.GetDifferences(
 				aws.String(repo),
 				t.DestinationReference,
 				t.SourceReference,
@@ -126,7 +126,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 				return nil, err
 			}
 		}
-		return diff, nil
+		return d, nil
 	})
 	util.ExitOnErr(err)
 

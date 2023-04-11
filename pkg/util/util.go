@@ -58,8 +58,8 @@ func Spinner[T any](startMsg string, closure func() (T, error)) (T, error) {
 	s.Start()
 	t, err := closure()
 	if err != nil {
-		var noop T
-		return noop, err
+		var zeroValue T
+		return zeroValue, err
 	}
 	return t, nil
 }
