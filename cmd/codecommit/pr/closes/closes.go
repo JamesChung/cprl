@@ -80,13 +80,16 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Get PRs for a given repository
-	var prs []*codecommit.GetPullRequestOutput
-	util.Spinner("Retrieving PRs...", func() {
-		prs, err = ccClient.GetPullRequests(client.PullRequestInput{
+	prs, err := util.Spinner("Retrieving PRs...", func() ([]*codecommit.GetPullRequestOutput, error) {
+		prs, err := ccClient.GetPullRequests(client.PullRequestInput{
 			AuthorARN:    authorARN,
 			Repositories: []string{repo},
 			Status:       types.PullRequestStatusEnumOpen,
 		})
+		if err != nil {
+			return nil, err
+		}
+		return prs, nil
 	})
 	util.ExitOnErr(err)
 
@@ -111,9 +114,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Close PRs
-	var res []client.Result[string]
-	util.Spinner("Closing...", func() {
-		res = ccClient.ClosePRs(prMap, prSelections)
+	res, _ := util.Spinner("Closing...", func() ([]client.Result[string], error) {
+		res := ccClient.ClosePRs(prMap, prSelections)
+		return res, nil
 	})
 
 	// Output PR close results

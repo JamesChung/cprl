@@ -82,13 +82,16 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Get PRs for a given repository
-	var prs []*codecommit.GetPullRequestOutput
-	util.Spinner("Retrieving PRs...", func() {
-		prs, err = ccClient.GetPullRequests(client.PullRequestInput{
+	prs, err := util.Spinner("Retrieving PRs...", func() ([]*codecommit.GetPullRequestOutput, error) {
+		prs, err := ccClient.GetPullRequests(client.PullRequestInput{
 			AuthorARN:    authorARN,
 			Repositories: []string{repo},
 			Status:       types.PullRequestStatusEnumOpen,
 		})
+		if err != nil {
+			return nil, err
+		}
+		return prs, nil
 	})
 	util.ExitOnErr(err)
 
@@ -110,22 +113,27 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Get diff metadata info between targets from CodeCommit
-	var diffOut []*codecommit.GetDifferencesOutput
-	util.Spinner("Getting Differences...", func() {
+	diffOut, err := util.Spinner("Getting Differences...", func() ([]*codecommit.GetDifferencesOutput, error) {
+		var err error
+		diff := make([]*codecommit.GetDifferencesOutput, 0, 10)
 		for _, t := range prMap[prSelection].PullRequest.PullRequestTargets {
-			diffOut, err = ccClient.GetDifferences(
+			diff, err = ccClient.GetDifferences(
 				aws.String(repo),
 				t.DestinationReference,
 				t.SourceReference,
 			)
+			if err != nil {
+				return nil, err
+			}
 		}
+		return diff, nil
 	})
 	util.ExitOnErr(err)
 
 	// Concurrently generate individual file diffs
-	var results, badResults []client.Result[[]byte]
-	util.Spinner("Generating Differences...", func() {
-		results = ccClient.GenerateDiffs(repo, diffOut)
+	results, _ := util.Spinner("Generating Differences...", func() ([]client.Result[[]byte], error) {
+		results := ccClient.GenerateDiffs(repo, diffOut)
+		return results, nil
 	})
 
 	// Prompt user for the name of the diff file
@@ -138,6 +146,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	defer f.Close()
 
 	// Use a bytes buffer to write the complete diff file from individual file diff bytes
+	var badResults []client.Result[[]byte]
 	buf := bytes.Buffer{}
 	for _, res := range results {
 		if res.Err != nil {

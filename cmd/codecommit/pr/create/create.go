@@ -72,9 +72,12 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Get branches
-	var branches []string
-	util.Spinner("Getting branches...", func() {
-		branches, err = ccClient.GetBranches(repo)
+	branches, err := util.Spinner("Getting branches...", func() ([]string, error) {
+		branches, err := ccClient.GetBranches(repo)
+		if err != nil {
+			return nil, err
+		}
+		return branches, nil
 	})
 	util.ExitOnErr(err)
 
@@ -109,7 +112,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Create PR
-	util.SpinnerWithStatusMsg("Creating PR...", func() (string, error) {
+	msg, err := util.Spinner("Creating PR...", func() (string, error) {
 		targets := []types.Target{
 			{
 				RepositoryName:       aws.String(repo),
@@ -127,4 +130,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 			aws.ToString(res.PullRequest.PullRequestId),
 		), nil
 	})
+	util.ExitOnErr(err)
+	pterm.Success.Println(msg)
 }

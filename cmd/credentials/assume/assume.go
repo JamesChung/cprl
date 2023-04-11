@@ -72,15 +72,16 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	roleARN, _ = cmd.LocalFlags().GetString("role-arn")
 	if roleARN == "" {
-		var iamClient *client.IAMClient
-		var roles []types.Role
-		util.Spinner("Getting roles...", func() {
-			iamClient, err = client.NewIAMClient(awsProfile)
-			util.ExitOnErr(err)
-
-			roles, err = iamClient.ListRoles()
-			util.ExitOnErr(err)
+		iamClient, err := client.NewIAMClient(awsProfile)
+		util.ExitOnErr(err)
+		roles, err := util.Spinner("Getting roles...", func() ([]types.Role, error) {
+			roles, err := iamClient.ListRoles()
+			if err != nil {
+				return nil, err
+			}
+			return roles, nil
 		})
+		util.ExitOnErr(err)
 
 		roleNames := make([]string, 0, 10)
 		roleMap := make(map[string]string)
@@ -103,14 +104,17 @@ func runCmd(cmd *cobra.Command, args []string) {
 		util.ExitOnErr(err)
 	}
 
-	var creds *sts.AssumeRoleOutput
-	util.Spinner("Acquiring credentials...", func() {
-		creds, err = stsClient.AssumeRole(&sts.AssumeRoleInput{
+	creds, err := util.Spinner("Acquiring credentials...", func() (*sts.AssumeRoleOutput, error) {
+		creds, err := stsClient.AssumeRole(&sts.AssumeRoleInput{
 			RoleArn:         aws.String(strings.Trim(roleARN, " ")),
 			RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
 		})
-		util.ExitOnErr(err)
+		if err != nil {
+			return nil, err
+		}
+		return creds, nil
 	})
+	util.ExitOnErr(err)
 
 	outputProfile, _ = cmd.LocalFlags().GetString("output-profile")
 	if outputProfile == "" {
@@ -119,7 +123,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		util.ExitOnErr(err)
 	}
 
-	util.SpinnerWithStatusMsg("Writing credentials...", func() (string, error) {
+	msg, err := util.Spinner("Writing credentials...", func() (string, error) {
 		err = util.WriteCredentials(outputProfile, aws.Credentials{
 			AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
 			SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
@@ -130,4 +134,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 		}
 		return fmt.Sprintf("[%s] was saved to credentials", outputProfile), nil
 	})
+	util.ExitOnErr(err)
+	pterm.Success.Println(msg)
 }

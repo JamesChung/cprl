@@ -70,9 +70,12 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Get branches for a given repository
-	var branches []string
-	util.Spinner("Retrieving branches...", func() {
-		branches, err = ccClient.GetBranches(repo)
+	branches, err := util.Spinner("Retrieving branches...", func() ([]string, error) {
+		branches, err := ccClient.GetBranches(repo)
+		if err != nil {
+			return nil, err
+		}
+		return branches, nil
 	})
 	util.ExitOnErr(err)
 
@@ -82,9 +85,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Remove branches
-	var results []client.Result[string]
-	util.Spinner("Removing...", func() {
-		results = ccClient.DeleteBranches(repo, branchSelections)
+	results, _ := util.Spinner("Removing...", func() ([]client.Result[string], error) {
+		results := ccClient.DeleteBranches(repo, branchSelections)
+		return results, nil
 	})
 
 	failCount := 0

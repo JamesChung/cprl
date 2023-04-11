@@ -87,28 +87,34 @@ func runCmd(cmd *cobra.Command, args []string) {
 	util.ExitOnErr(err)
 
 	// Get PR IDs
-	var prIDs [][]string
-	util.Spinner("Getting PR IDs...", func() {
-		prIDs, err = ccClient.GetPullRequestIDs(
+	prIDs, err := util.Spinner("Getting PR IDs...", func() ([][]string, error) {
+		prIDs, err := ccClient.GetPullRequestIDs(
 			client.PullRequestInput{
 				AuthorARN:    authorARN,
 				Repositories: repoSelections,
 				Status:       status,
 			})
+		if err != nil {
+			return nil, err
+		}
+		return prIDs, err
 	})
 	util.ExitOnErr(err)
 
 	// Get PR information
-	var prInfoList []*codecommit.GetPullRequestOutput
-	util.Spinner("Getting PR Information...", func() {
-		prInfoList, err = ccClient.GetPullRequestInfoFromIDs(prIDs)
+	prInfoList, err := util.Spinner("Getting PR Information...", func() ([]*codecommit.GetPullRequestOutput, error) {
+		prInfoList, err := ccClient.GetPullRequestInfoFromIDs(prIDs)
+		if err != nil {
+			return nil, err
+		}
+		return prInfoList, err
 	})
 	util.ExitOnErr(err)
 
 	// Generate table
-	var tbl *pterm.TablePrinter
-	util.Spinner("Generating Table...", func() {
-		tbl = util.PRsToTable(util.GenerateTableHeaders(tblSelections), prInfoList)
+	tbl, _ := util.Spinner("Generating Table...", func() (*pterm.TablePrinter, error) {
+		tbl := util.PRsToTable(util.GenerateTableHeaders(tblSelections), prInfoList)
+		return tbl, nil
 	})
 	err = tbl.Render()
 	util.ExitOnErr(err)

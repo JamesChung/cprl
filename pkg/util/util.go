@@ -50,28 +50,16 @@ func GetFlagBool(cmd *cobra.Command, str string) (bool, error) {
 	return val, nil
 }
 
-type SpinnerFunc func()
-
-func Spinner(startMsg string, closure SpinnerFunc) {
+func Spinner[T any](startMsg string, closure func() (T, error)) (T, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	defer s.Stop()
 	s.Color("blue", "bold")
 	s.Suffix = pterm.Blue(" ", startMsg)
 	s.Start()
-	closure()
-	s.Stop()
-}
-
-type SpinnerMsgFunc func() (string, error)
-
-func SpinnerWithStatusMsg(startMsg string, closure SpinnerMsgFunc) {
-	var str string
-	var err error
-	Spinner(startMsg, func() { str, err = closure() })
-	switch {
-	case err != nil:
-		ExitOnErr(err)
-	case str != "":
-		pterm.Success.Println(str)
-		return
+	t, err := closure()
+	if err != nil {
+		var noop T
+		return noop, err
 	}
+	return t, nil
 }
