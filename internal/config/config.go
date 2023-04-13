@@ -167,3 +167,40 @@ func GetAWSProfile(cmd *cobra.Command) (string, error) {
 	// https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
 	return "default", nil
 }
+
+type Config struct {
+	Profile    string
+	AWSProfile string
+}
+
+func (c *Config) SetProfile(cmd *cobra.Command) error {
+	profile, err := GetProfile(cmd)
+	if err != nil {
+		return err
+	}
+	c.Profile = profile
+	return nil
+}
+
+func (c *Config) SetAWSProfile(cmd *cobra.Command) error {
+	awsProfile, err := GetAWSProfile(cmd)
+	if err != nil {
+		return err
+	}
+	c.AWSProfile = awsProfile
+	return nil
+}
+
+func NewConfig(cmd *cobra.Command) (*Config, error) {
+	var err error
+	cfg := &Config{}
+	err = cfg.SetProfile(cmd)
+	if err != nil {
+		return nil, err
+	}
+	err = cfg.SetAWSProfile(cmd)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
