@@ -10,6 +10,7 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/pkg/util"
+	"github.com/JamesChung/cprl/internal/config"
 )
 
 var (
@@ -63,19 +64,19 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
+	cfg, err := config.NewConfig(cmd)
+	util.ExitOnErr(err)
+
 	profiles, err := util.GetAllProfiles()
 	util.ExitOnErr(err)
 
-	awsProfile, err := cmd.Flags().GetString("aws-profile")
-	util.ExitOnErr(err)
-
-	if awsProfile == "" {
-		awsProfile, err = pterm.DefaultInteractiveSelect.
+	if cfg.AWSProfile == "" {
+		cfg.AWSProfile, err = pterm.DefaultInteractiveSelect.
 			WithOptions(profiles).Show("Select a profile")
 		util.ExitOnErr(err)
 	}
 
-	creds, err := util.GetCredentials(awsProfile)
+	creds, err := util.GetCredentials(cfg.AWSProfile)
 	util.ExitOnErr(err)
 
 	jsonOut, err := cmd.Flags().GetBool("json")
