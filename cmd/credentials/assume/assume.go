@@ -61,18 +61,48 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
+type assumeConfig struct {
+	config.Config
+	roleARN       string
+	sessionName   string
+	outputProfile string
+}
+
+func newAssumeConfig(cmd *cobra.Command) (*assumeConfig, error) {
+	c, err := config.NewConfig(cmd)
+	if err != nil {
+		return nil, err
+	}
+	cfg := &assumeConfig{}
+	cfg.Profile = c.Profile
+	cfg.AWSProfile = c.AWSProfile
+	roleARN, err := cmd.LocalFlags().GetString("role-arn")
+	if err != nil {
+		return nil, err
+	}
+	cfg.roleARN = roleARN
+	sessionName, err := cmd.LocalFlags().GetString("session-name")
+	if err != nil {
+		return nil, err
+	}
+	cfg.sessionName = sessionName
+	outputProfile, err := cmd.LocalFlags().GetString("output-profile")
+	if err != nil {
+		return nil, err
+	}
+	cfg.outputProfile = outputProfile
+	return cfg, nil
+}
+
 func runCmd(cmd *cobra.Command, args []string) {
-	awsProfile, err := config.GetAWSProfile(cmd)
+	cfg, err := newAssumeConfig(cmd)
 	util.ExitOnErr(err)
 
-	stsClient, err := client.NewSTSClient(awsProfile)
+	stsClient, err := client.NewSTSClient(cfg.AWSProfile)
 	util.ExitOnErr(err)
 
-	var roleARN, sessionName, outputProfile string
-
-	roleARN, _ = cmd.LocalFlags().GetString("role-arn")
-	if roleARN == "" {
-		iamClient, err := client.NewIAMClient(awsProfile)
+	if cfg.roleARN == "" {
+		iamClient, err := client.NewIAMClient(cfg.AWSProfile)
 		util.ExitOnErr(err)
 		roles, err := util.Spinner("Getting roles...", func() ([]types.Role, error) {
 			roles, err := iamClient.ListRoles()
@@ -94,20 +124,19 @@ func runCmd(cmd *cobra.Command, args []string) {
 			WithOptions(roleNames).Show("Select role to assume")
 		util.ExitOnErr(err)
 
-		roleARN = roleMap[roleName]
+		cfg.roleARN = roleMap[roleName]
 	}
 
-	sessionName, _ = cmd.LocalFlags().GetString("session-name")
-	if sessionName == "" {
-		sessionName, err = pterm.DefaultInteractiveTextInput.
+	if cfg.sessionName == "" {
+		cfg.sessionName, err = pterm.DefaultInteractiveTextInput.
 			WithDefaultText("Session name").Show()
 		util.ExitOnErr(err)
 	}
 
 	creds, err := util.Spinner("Acquiring credentials...", func() (*sts.AssumeRoleOutput, error) {
 		creds, err := stsClient.AssumeRole(&sts.AssumeRoleInput{
-			RoleArn:         aws.String(strings.Trim(roleARN, " ")),
-			RoleSessionName: aws.String(strings.Trim(sessionName, " ")),
+			RoleArn:         aws.String(strings.Trim(cfg.roleARN, " ")),
+			RoleSessionName: aws.String(strings.Trim(cfg.sessionName, " ")),
 		})
 		if err != nil {
 			return nil, err
@@ -116,15 +145,14 @@ func runCmd(cmd *cobra.Command, args []string) {
 	})
 	util.ExitOnErr(err)
 
-	outputProfile, _ = cmd.LocalFlags().GetString("output-profile")
-	if outputProfile == "" {
-		outputProfile, err = pterm.DefaultInteractiveTextInput.
+	if cfg.outputProfile == "" {
+		cfg.outputProfile, err = pterm.DefaultInteractiveTextInput.
 			WithDefaultText("New AWS profile name").Show()
 		util.ExitOnErr(err)
 	}
 
 	msg, err := util.Spinner("Writing credentials...", func() (string, error) {
-		err = util.WriteCredentials(outputProfile, aws.Credentials{
+		err = util.WriteCredentials(cfg.outputProfile, aws.Credentials{
 			AccessKeyID:     aws.ToString(creds.Credentials.AccessKeyId),
 			SecretAccessKey: aws.ToString(creds.Credentials.SecretAccessKey),
 			SessionToken:    aws.ToString(creds.Credentials.SessionToken),
@@ -132,7 +160,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		if err != nil {
 			return "", err
 		}
-		return fmt.Sprintf("[%s] was saved to credentials", outputProfile), nil
+		return fmt.Sprintf("[%s] was saved to credentials", cfg.outputProfile), nil
 	})
 	util.ExitOnErr(err)
 	pterm.Success.Println(msg)
