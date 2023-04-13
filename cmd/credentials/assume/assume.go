@@ -74,8 +74,7 @@ func newAssumeConfig(cmd *cobra.Command) (*assumeConfig, error) {
 		return nil, err
 	}
 	cfg := &assumeConfig{}
-	cfg.Profile = c.Profile
-	cfg.AWSProfile = c.AWSProfile
+	cfg.Config = *c
 	roleARN, err := cmd.LocalFlags().GetString("role-arn")
 	if err != nil {
 		return nil, err
