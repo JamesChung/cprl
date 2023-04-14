@@ -96,7 +96,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	default:
 		util.ExitOnErr(
 			fmt.Errorf(
-				"unrecognized option --style [%s], can be [unix, powershell, windows]",
+				"unrecognized option --output-style [%s], can be [unix, powershell, windows]",
 				cfg.OutputStyle),
 		)
 	}
