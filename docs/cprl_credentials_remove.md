@@ -1,26 +1,24 @@
-## cprl credentials list
+## cprl credentials remove
 
-lists AWS profiles
+remove AWS credentials
 
 ```
-cprl credentials list [flags]
+cprl credentials remove [flags]
 ```
 
 ### Examples
 
 ```
-  $ cprl credentials list
-  ├─┬Config
-  │ └──default
-  └─┬Credentials
-  ⁤  ├──dev
-  ⁤  └──test
+  $ cprl credentials remove
+  Select profiles to remove:
+  > [✗] dev
+  enter: select | tab: confirm | left: none | right: all| type to filter
 ```
 
 ### Options
 
 ```
-  -h, --help   help for list
+  -h, --help   help for remove
 ```
 
 ### Options inherited from parent commands
