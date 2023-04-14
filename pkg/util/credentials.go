@@ -154,10 +154,31 @@ func RemoveProfiles(profiles []string) error {
 	return nil
 }
 
+type credentials struct {
+	AccessKeyID     string `json:"AccessKeyID"`
+	SecretAccessKey string `json:"SecretAccessKey"`
+	SessionToken    string `json:"SessionToken"`
+	Source          string `json:"Source"`
+}
+
 func StringifyCredentials(creds aws.Credentials) (string, error) {
-	b, err := json.Marshal(creds)
-	if err != nil {
-		return "", err
+	var b []byte
+	var err error
+	if creds.CanExpire {
+		b, err = json.Marshal(creds)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		b, err = json.Marshal(credentials{
+			AccessKeyID:     creds.AccessKeyID,
+			SecretAccessKey: creds.SecretAccessKey,
+			SessionToken:    creds.SessionToken,
+			Source:          creds.Source,
+		})
+		if err != nil {
+			return "", err
+		}
 	}
 	return string(b), nil
 }
