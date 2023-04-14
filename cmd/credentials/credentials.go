@@ -5,9 +5,9 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/cmd/credentials/assume"
-	"github.com/JamesChung/cprl/cmd/credentials/clear"
 	"github.com/JamesChung/cprl/cmd/credentials/list"
 	"github.com/JamesChung/cprl/cmd/credentials/output"
+	"github.com/JamesChung/cprl/cmd/credentials/remove"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -20,9 +20,9 @@ var (
 func credentialsCommands() []*cobra.Command {
 	return []*cobra.Command{
 		assume.NewCmd(),
-		clear.NewCmd(),
 		list.NewCmd(),
 		output.NewCmd(),
+		remove.NewCmd(),
 	}
 }
 

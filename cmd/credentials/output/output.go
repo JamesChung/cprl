@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -38,6 +37,12 @@ var (
 )
 
 func setPersistentFlags(flags *pflag.FlagSet) {
+	flags.BoolP(
+		"interactive",
+		"i",
+		false,
+		"interactive prompt with suggested profiles",
+	)
 	flags.Bool(
 		"json",
 		false,
@@ -70,9 +75,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	profiles, err := util.GetAllProfiles()
 	util.ExitOnErr(err)
 
-	if cfg.AWSProfile == "" {
-		cfg.AWSProfile, err = pterm.DefaultInteractiveSelect.
-			WithOptions(profiles).Show("Select a profile")
+	if cfg.Interactive {
+		err = cfg.InteractivelyAssignProfile(profiles)
 		util.ExitOnErr(err)
 	}
 

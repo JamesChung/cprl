@@ -1,4 +1,4 @@
-package clear
+package remove
 
 import (
 	"github.com/JamesChung/cprl/pkg/util"
@@ -8,19 +8,19 @@ import (
 )
 
 var (
-	shortMessage = "clears AWS credentials"
+	shortMessage = "remove AWS credentials"
 
 	example = templates.Examples(`
-	$ cprl credentials clear
-	Please select your options:
+	$ cprl credentials remove
+	Select profiles to remove:
 	> [✗] dev
 	enter: select | tab: confirm | left: none | right: all| type to filter`)
 )
 
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "clear",
-		Aliases: []string{"c", "cl", "clr"},
+		Use:     "remove",
+		Aliases: []string{"r", "rm", "rem"},
 		Short:   shortMessage,
 		Example: example,
 		Run:     runCmd,
@@ -32,8 +32,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	profiles, err := util.GetCredentialsProfiles()
 	util.ExitOnErr(err)
 	selections, err := pterm.DefaultInteractiveMultiselect.
-		WithOptions(profiles).Show()
+		WithOptions(profiles).Show("Select profiles to remove")
 	util.ExitOnErr(err)
-	err = util.ClearProfiles(selections)
+	err = util.RemoveProfiles(selections)
 	util.ExitOnErr(err)
 }

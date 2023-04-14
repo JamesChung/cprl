@@ -9,6 +9,7 @@ type CredentialsConfig struct {
 	OutputProfile string
 	OutputStyle   string
 	IsJSON        bool
+	Interactive   bool
 }
 
 func NewCredentialsConfig(cmd *cobra.Command) (*CredentialsConfig, error) {
@@ -22,5 +23,6 @@ func NewCredentialsConfig(cmd *cobra.Command) (*CredentialsConfig, error) {
 	cfg.OutputProfile, _ = cmd.Flags().GetString("output-profile")
 	cfg.OutputStyle, _ = cmd.Flags().GetString("output-style")
 	cfg.IsJSON, _ = cmd.Flags().GetBool("json")
+	cfg.Interactive, _ = cmd.Flags().GetBool("interactive")
 	return cfg, nil
 }

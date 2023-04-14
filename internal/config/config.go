@@ -191,6 +191,16 @@ func (c *Config) SetAWSProfile(cmd *cobra.Command) error {
 	return nil
 }
 
+func (c *Config) InteractivelyAssignProfile(profiles []string) error {
+	var err error
+	c.AWSProfile, err = pterm.DefaultInteractiveSelect.
+		WithOptions(profiles).Show("Select a profile")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func NewConfig(cmd *cobra.Command) (*Config, error) {
 	var err error
 	cfg := &Config{}

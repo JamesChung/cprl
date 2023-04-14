@@ -2,6 +2,7 @@ package closes
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
@@ -67,8 +68,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Select a repository
 	if cfg.Repository == "" {
 		cfg.Repository, err = pterm.DefaultInteractiveSelect.
-			WithDefaultText("Select a repository").
-			WithOptions(repos).Show()
+			WithOptions(repos).Show("Select a repository")
 		util.ExitOnErr(err)
 	}
 
@@ -123,6 +123,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 		pterm.Success.Printf("Successfully closed PR [%s]\n", r.Result)
 	}
 	if errCount > 0 {
-		util.ExitOnErr(fmt.Errorf("%d PRs failed to be closed\n", errCount))
+		os.Exit(1)
 	}
 }

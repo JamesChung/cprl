@@ -1,7 +1,6 @@
 package open
 
 import (
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -51,8 +50,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		if err != nil {
 			util.ExitOnErr(err)
 		}
-		cfg.AWSProfile, err = pterm.DefaultInteractiveSelect.
-			WithOptions(profiles).Show("Select a profile")
+		err = cfg.InteractivelyAssignProfile(profiles)
 		util.ExitOnErr(err)
 	}
 

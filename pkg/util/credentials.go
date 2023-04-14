@@ -134,7 +134,7 @@ func WriteCredentials(section string, creds aws.Credentials) error {
 	return nil
 }
 
-func ClearProfiles(profiles []string) error {
+func RemoveProfiles(profiles []string) error {
 	credentialsFile, err := getCredentialsFilePath()
 	if err != nil {
 		return err

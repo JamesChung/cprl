@@ -1,7 +1,7 @@
 package remove
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -38,7 +38,7 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "remove",
-		Aliases: []string{"r", "rem"},
+		Aliases: []string{"r", "rm", "rem"},
 		Short:   shortMessage,
 		Long:    longMessage,
 		Example: example,
@@ -59,8 +59,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Select a repository
 	if cfg.Repository == "" {
 		cfg.Repository, err = pterm.DefaultInteractiveSelect.
-			WithDefaultText("Select a repository").
-			WithOptions(repos).Show()
+			WithOptions(repos).Show("Select a repository")
 		util.ExitOnErr(err)
 	}
 
@@ -88,7 +87,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	failCount := 0
 	for _, r := range results {
 		if r.Err != nil {
-			pterm.Error.Printf("Failed to remove branch [%s]\n", r.Result)
+			pterm.Error.Printf("Failed to remove branch [%s]: %s\n", r.Result, r.Err)
 			failCount++
 			continue
 		}
@@ -96,6 +95,6 @@ func runCmd(cmd *cobra.Command, args []string) {
 	}
 
 	if failCount > 0 {
-		util.ExitOnErr(fmt.Errorf("Failed to remove %d branches\n", failCount))
+		os.Exit(1)
 	}
 }

@@ -69,8 +69,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Select a repository
 	if cfg.Repository == "" {
 		cfg.Repository, err = pterm.DefaultInteractiveSelect.
-			WithDefaultText("Select a repository").
-			WithOptions(repos).Show()
+			WithOptions(repos).Show("Select a repository")
 		util.ExitOnErr(err)
 	}
 
