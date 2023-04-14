@@ -8,7 +8,6 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
-	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
 	"github.com/JamesChung/cprl/pkg/client"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -54,17 +53,11 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	profile, err := config.GetProfile(cmd)
+	cfg, err := config.NewCodeCommitConfig(cmd)
 	util.ExitOnErr(err)
-	awsProfile, err := config.GetAWSProfile(cmd)
+	ccClient, err := client.NewCodeCommitClient(cfg.AWSProfile)
 	util.ExitOnErr(err)
-	ccClient, err := client.NewCodeCommitClient(awsProfile)
-	util.ExitOnErr(err)
-	repos, err := cc.GetRepositories(profile)
-	util.ExitOnErr(err)
-	authorARN, err := cc.GetAuthorARN(cmd)
-	util.ExitOnErr(err)
-	status, err := cc.GetClosed(cmd)
+	repos, err := config.GetRepositories(cfg.Profile)
 	util.ExitOnErr(err)
 
 	// Get repository query list
@@ -90,9 +83,9 @@ func runCmd(cmd *cobra.Command, args []string) {
 	prIDs, err := util.Spinner("Getting PR IDs...", func() ([][]string, error) {
 		prIDs, err := ccClient.GetPullRequestIDs(
 			client.PullRequestInput{
-				AuthorARN:    authorARN,
+				AuthorARN:    cfg.AuthorARN,
 				Repositories: repoSelections,
-				Status:       status,
+				Status:       cfg.PRStatus,
 			})
 		if err != nil {
 			return nil, err

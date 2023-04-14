@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	"github.com/JamesChung/cprl/pkg/util"
 	"github.com/JamesChung/cprl/internal/config"
+	"github.com/JamesChung/cprl/pkg/util"
 )
 
 var (
@@ -44,8 +44,8 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 		"output in json format",
 	)
 	flags.StringP(
-		"style",
-		"s",
+		"output-style",
+		"o",
 		"unix",
 		"output style [unix, powershell, windows]",
 	)
@@ -64,7 +64,7 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	cfg, err := config.NewConfig(cmd)
+	cfg, err := config.NewCredentialsConfig(cmd)
 	util.ExitOnErr(err)
 
 	profiles, err := util.GetAllProfiles()
@@ -79,18 +79,14 @@ func runCmd(cmd *cobra.Command, args []string) {
 	creds, err := util.GetCredentials(cfg.AWSProfile)
 	util.ExitOnErr(err)
 
-	jsonOut, err := cmd.Flags().GetBool("json")
-	util.ExitOnErr(err)
-	if jsonOut {
+	if cfg.IsJSON {
 		strCreds, err := util.StringifyCredentials(creds)
 		util.ExitOnErr(err)
 		fmt.Println(strCreds)
 		return
 	}
-	outputType, err := cmd.Flags().GetString("style")
-	util.ExitOnErr(err)
 
-	switch outputType {
+	switch cfg.OutputStyle {
 	case "unix":
 		unixOutput(creds)
 	case "powershell":
@@ -101,7 +97,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		util.ExitOnErr(
 			fmt.Errorf(
 				"unrecognized option --style [%s], can be [unix, powershell, windows]",
-				outputType),
+				cfg.OutputStyle),
 		)
 	}
 }

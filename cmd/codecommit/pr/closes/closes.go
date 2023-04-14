@@ -12,7 +12,6 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
-	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
 	"github.com/JamesChung/cprl/pkg/client"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -58,22 +57,16 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	profile, err := config.GetProfile(cmd)
+	cfg, err := config.NewCodeCommitConfig(cmd)
 	util.ExitOnErr(err)
-	repos, err := cc.GetRepositories(profile)
+	repos, err := config.GetRepositories(cfg.Profile)
 	util.ExitOnErr(err)
-	awsProfile, err := config.GetAWSProfile(cmd)
-	util.ExitOnErr(err)
-	ccClient, err := client.NewCodeCommitClient(awsProfile)
-	util.ExitOnErr(err)
-	authorARN, err := cc.GetAuthorARN(cmd)
+	ccClient, err := client.NewCodeCommitClient(cfg.AWSProfile)
 	util.ExitOnErr(err)
 
 	// Select a repository
-	repo, err := cmd.Flags().GetString("repository")
-	util.ExitOnErr(err)
-	if repo == "" {
-		repo, err = pterm.DefaultInteractiveSelect.
+	if cfg.Repository == "" {
+		cfg.Repository, err = pterm.DefaultInteractiveSelect.
 			WithDefaultText("Select a repository").
 			WithOptions(repos).Show()
 		util.ExitOnErr(err)
@@ -82,8 +75,8 @@ func runCmd(cmd *cobra.Command, args []string) {
 	// Get PRs for a given repository
 	prs, err := util.Spinner("Retrieving PRs...", func() ([]*codecommit.GetPullRequestOutput, error) {
 		prs, err := ccClient.GetPullRequests(client.PullRequestInput{
-			AuthorARN:    authorARN,
-			Repositories: []string{repo},
+			AuthorARN:    cfg.AuthorARN,
+			Repositories: []string{cfg.Repository},
 			Status:       types.PullRequestStatusEnumOpen,
 		})
 		if err != nil {
@@ -105,7 +98,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 		prMap[s] = prs[i]
 	}
 	if len(li) == 0 {
-		util.ExitOnErr(fmt.Errorf("[%s] has no available PRs", repo))
+		util.ExitOnErr(fmt.Errorf("[%s] has no available PRs", cfg.Repository))
 	}
 
 	// Prompt for PRs to close

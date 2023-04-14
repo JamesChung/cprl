@@ -18,34 +18,24 @@ func NewConsoleConfig(cmd *cobra.Command) (*ConsoleConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg := &ConsoleConfig{}
-	cfg.Config = c
-	interactive, err := cmd.Flags().GetBool("interactive")
-	if err != nil {
-		return nil, err
-	}
-	cfg.Interactive = interactive
-	isGovCloud, err := IsGovCloud(cmd, cfg.Profile)
-	if err != nil {
-		return nil, err
-	}
-	cfg.IsGovCloud = isGovCloud
+	cfg := &ConsoleConfig{Config: c}
+	cfg.Interactive, _ = cmd.Flags().GetBool("interactive")
+	cfg.IsGovCloud = IsGovCloud(cmd, cfg.Profile)
 	return cfg, nil
 }
 
-func IsGovCloud(cmd *cobra.Command, profile string) (bool, error) {
-	gov, err := cmd.Flags().GetBool("gov-cloud")
-	if err != nil {
-		return gov, err
-	}
+func IsGovCloud(cmd *cobra.Command, profile string) bool {
+	gov, _ := cmd.Flags().GetBool("gov-cloud")
 	if gov {
-		return gov, nil
+		return gov
 	}
+
+	// Fallback to cprl.yaml profile value if flag is not set
 	gov = viper.GetBool(
 		fmt.Sprintf(
 			"%s.services.console.gov-cloud",
 			profile,
 		),
 	)
-	return gov, nil
+	return gov
 }

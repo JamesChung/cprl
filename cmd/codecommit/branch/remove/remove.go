@@ -9,7 +9,6 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
-	cc "github.com/JamesChung/cprl/internal/config/services/codecommit"
 	"github.com/JamesChung/cprl/pkg/client"
 	"github.com/JamesChung/cprl/pkg/util"
 )
@@ -50,20 +49,16 @@ func NewCmd() *cobra.Command {
 }
 
 func runCmd(cmd *cobra.Command, args []string) {
-	profile, err := config.GetProfile(cmd)
+	cfg, err := config.NewCodeCommitConfig(cmd)
 	util.ExitOnErr(err)
-	repos, err := cc.GetRepositories(profile)
+	repos, err := config.GetRepositories(cfg.Profile)
 	util.ExitOnErr(err)
-	awsProfile, err := config.GetAWSProfile(cmd)
-	util.ExitOnErr(err)
-	ccClient, err := client.NewCodeCommitClient(awsProfile)
+	ccClient, err := client.NewCodeCommitClient(cfg.AWSProfile)
 	util.ExitOnErr(err)
 
 	// Select a repository
-	repo, err := cmd.Flags().GetString("repository")
-	util.ExitOnErr(err)
-	if repo == "" {
-		repo, err = pterm.DefaultInteractiveSelect.
+	if cfg.Repository == "" {
+		cfg.Repository, err = pterm.DefaultInteractiveSelect.
 			WithDefaultText("Select a repository").
 			WithOptions(repos).Show()
 		util.ExitOnErr(err)
@@ -71,7 +66,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	// Get branches for a given repository
 	branches, err := util.Spinner("Retrieving branches...", func() ([]string, error) {
-		branches, err := ccClient.GetBranches(repo)
+		branches, err := ccClient.GetBranches(cfg.Repository)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +81,7 @@ func runCmd(cmd *cobra.Command, args []string) {
 
 	// Remove branches
 	results, _ := util.Spinner("Removing...", func() ([]client.Result[string], error) {
-		results := ccClient.DeleteBranches(repo, branchSelections)
+		results := ccClient.DeleteBranches(cfg.Repository, branchSelections)
 		return results, nil
 	})
 
