@@ -6,14 +6,14 @@ build:
 test:
 	go test -v
 
-.PHONY:release
+.PHONY: release
 release:
 	@git push
 	goreleaser release --clean
 
 .PHONY: tag
 tag:
-	git tag -a v0.0.0-alpha-$$(date +"%Y%m%d%H%M%S") -m v0.0.0-alpha-$$(date +"%Y%m%d%H%M%S")
+	git tag -a v0.0.0-beta.$$(date +"%Y%m%d") -m v0.0.0-beta.$$(date +"%Y%m%d")
 
 .PHONY: local
 local:
