@@ -7,7 +7,6 @@ import (
 	"k8s.io/kubectl/pkg/util/templates"
 
 	"github.com/JamesChung/cprl/internal/config"
-	"github.com/JamesChung/cprl/internal/config/services/console"
 	"github.com/JamesChung/cprl/pkg/util"
 )
 
@@ -43,34 +42,8 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
-type openConfig struct {
-	config.Config
-	Interactive bool
-	IsGovCloud  bool
-}
-
-func newOpenConfig(cmd *cobra.Command) (*openConfig, error) {
-	c, err := config.NewConfig(cmd)
-	if err != nil {
-		return nil, err
-	}
-	cfg := &openConfig{}
-	cfg.Config = *c
-	interactive, err := cmd.Flags().GetBool("interactive")
-	if err != nil {
-		return nil, err
-	}
-	cfg.Interactive = interactive
-	isGovCloud, err := console.IsGovCloud(cmd, cfg.Profile)
-	if err != nil {
-		return nil, err
-	}
-	cfg.IsGovCloud = isGovCloud
-	return cfg, nil
-}
-
 func runCmd(cmd *cobra.Command, args []string) {
-	cfg, err := newOpenConfig(cmd)
+	cfg, err := config.NewConsoleConfig(cmd)
 	util.ExitOnErr(err)
 
 	if cfg.Interactive {
