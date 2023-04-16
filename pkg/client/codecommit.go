@@ -42,6 +42,7 @@ func (c *CodeCommitClient) ListPRs(repositoryName, authorArn string, status type
 	return ids, nil
 }
 
+// GetPRInfo is a wrapper around the AWS SDKv2 GetPullRequest API.
 func (c *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOutput, error) {
 	ctx := context.Background()
 	pr, err := c.Client.GetPullRequest(
@@ -55,6 +56,7 @@ func (c *CodeCommitClient) GetPRInfo(prID string) (*codecommit.GetPullRequestOut
 	return pr, nil
 }
 
+// GetBranches returns a list of branch names for a given repository.
 func (c *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 	branches := []string{}
 	ctx := context.Background()
@@ -72,6 +74,7 @@ func (c *CodeCommitClient) GetBranches(repoName string) ([]string, error) {
 	return branches, nil
 }
 
+// DeleteBranch deletes a branch from a given repository.
 func (c *CodeCommitClient) DeleteBranch(repo string, branch string) (*codecommit.DeleteBranchOutput, error) {
 	ctx := context.Background()
 	res, err := c.Client.DeleteBranch(ctx, &codecommit.DeleteBranchInput{
@@ -84,11 +87,20 @@ func (c *CodeCommitClient) DeleteBranch(repo string, branch string) (*codecommit
 	return res, nil
 }
 
-// DeleteBranches ...
+// DeleteBranches attempts to delete all given branches for a given repository synchronously.
 func (c *CodeCommitClient) DeleteBranches(repo string, branches []string) []Result[string] {
+	results := make([]Result[string], 0, 10)
+	resCh := c.DeleteBranchesConcurrently(repo, branches)
+	for r := range resCh {
+		results = append(results, r)
+	}
+	return results
+}
+
+// DeleteBranchesConcurrently deletes all given branches from a given repository concurrently.
+func (c *CodeCommitClient) DeleteBranchesConcurrently(repo string, branches []string) <-chan Result[string] {
 	resCh := make(chan Result[string], runtime.NumCPU())
 	wg := sync.WaitGroup{}
-	results := make([]Result[string], 0, 10)
 	for _, branch := range branches {
 		wg.Add(1)
 		go func(branch string) {
@@ -105,10 +117,8 @@ func (c *CodeCommitClient) DeleteBranches(repo string, branches []string) []Resu
 		defer close(resCh)
 		wg.Wait()
 	}()
-	for r := range resCh {
-		results = append(results, r)
-	}
-	return results
+
+	return resCh
 }
 
 func (c *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) (*codecommit.CreatePullRequestOutput, error) {
@@ -128,9 +138,18 @@ func (c *CodeCommitClient) CreatePR(targets []types.Target, title, desc string) 
 // ApprovePRs ...
 func (c *CodeCommitClient) ApprovePRs(prMap PRMap, prSelections []string) []Result[string] {
 	ctx := context.Background()
+	ch := c.ApprovePRsConcurrently(ctx, prMap, prSelections)
+	results := make([]Result[string], 0, 10)
+	for res := range ch {
+		results = append(results, res)
+	}
+	return results
+}
+
+func (c *CodeCommitClient) ApprovePRsConcurrently(ctx context.Context, prMap PRMap, prs []string) <-chan Result[string] {
 	wg := sync.WaitGroup{}
 	ch := make(chan Result[string], 10)
-	for _, v := range prSelections {
+	for _, v := range prs {
 		wg.Add(1)
 		go func(v string) {
 			defer wg.Done()
@@ -151,6 +170,14 @@ func (c *CodeCommitClient) ApprovePRs(prMap PRMap, prSelections []string) []Resu
 		defer close(ch)
 		wg.Wait()
 	}()
+
+	return ch
+}
+
+// ClosePRs ...
+func (c *CodeCommitClient) ClosePRs(prMap PRMap, prSelections []string) []Result[string] {
+	ctx := context.Background()
+	ch := c.ClosePRsConcurrently(ctx, prMap, prSelections)
 	results := make([]Result[string], 0, 10)
 	for res := range ch {
 		results = append(results, res)
@@ -158,12 +185,10 @@ func (c *CodeCommitClient) ApprovePRs(prMap PRMap, prSelections []string) []Resu
 	return results
 }
 
-// ClosePRs ...
-func (c *CodeCommitClient) ClosePRs(prMap PRMap, prSelections []string) []Result[string] {
-	ctx := context.Background()
+func (c *CodeCommitClient) ClosePRsConcurrently(ctx context.Context, prMap PRMap, prs []string) <-chan Result[string] {
 	wg := sync.WaitGroup{}
 	ch := make(chan Result[string], 10)
-	for _, v := range prSelections {
+	for _, v := range prs {
 		wg.Add(1)
 		go func(v string) {
 			defer wg.Done()
@@ -183,11 +208,8 @@ func (c *CodeCommitClient) ClosePRs(prMap PRMap, prSelections []string) []Result
 		defer close(ch)
 		wg.Wait()
 	}()
-	results := make([]Result[string], 0, 10)
-	for res := range ch {
-		results = append(results, res)
-	}
-	return results
+
+	return ch
 }
 
 func (c *CodeCommitClient) GetDifferences(repositoryName, beforeCommitSpecifier, afterCommitSpecifier *string) ([]*codecommit.GetDifferencesOutput, error) {
@@ -218,6 +240,18 @@ type PullRequestInput struct {
 
 // GetPullRequestIDs ...
 func (c *CodeCommitClient) GetPullRequestIDs(input PullRequestInput) ([][]string, error) {
+	ch := c.GetPullRequestIDsConcurrently(input)
+	response := make([][]string, 0, len(input.Repositories))
+	for ids := range ch {
+		if ids.Err != nil {
+			return nil, ids.Err
+		}
+		response = append(response, ids.Result)
+	}
+	return response, nil
+}
+
+func (c *CodeCommitClient) GetPullRequestIDsConcurrently(input PullRequestInput) <-chan Result[[]string] {
 	ch := make(chan Result[[]string], 10)
 	wg := sync.WaitGroup{}
 	for _, repo := range input.Repositories {
@@ -238,18 +272,24 @@ func (c *CodeCommitClient) GetPullRequestIDs(input PullRequestInput) ([][]string
 		defer close(ch)
 		wg.Wait()
 	}()
-	response := make([][]string, 0, len(input.Repositories))
-	for ids := range ch {
-		if ids.Err != nil {
-			return nil, ids.Err
-		}
-		response = append(response, ids.Result)
-	}
-	return response, nil
+
+	return ch
 }
 
 // GetPullRequestInfoFromIDs ...
 func (c *CodeCommitClient) GetPullRequestInfoFromIDs(input [][]string) ([]*codecommit.GetPullRequestOutput, error) {
+	ch := c.GetPullRequestInfoFromIDsConcurrently(input)
+	prList := make([]*codecommit.GetPullRequestOutput, 0)
+	for r := range ch {
+		if r.Err != nil {
+			return nil, r.Err
+		}
+		prList = append(prList, r.Result)
+	}
+	return prList, nil
+}
+
+func (c *CodeCommitClient) GetPullRequestInfoFromIDsConcurrently(input [][]string) <-chan Result[*codecommit.GetPullRequestOutput] {
 	ch := make(chan Result[*codecommit.GetPullRequestOutput], 10)
 	wg := sync.WaitGroup{}
 	for _, ids := range input {
@@ -270,14 +310,7 @@ func (c *CodeCommitClient) GetPullRequestInfoFromIDs(input [][]string) ([]*codec
 		defer close(ch)
 		wg.Wait()
 	}()
-	prList := make([]*codecommit.GetPullRequestOutput, 0)
-	for r := range ch {
-		if r.Err != nil {
-			return nil, r.Err
-		}
-		prList = append(prList, r.Result)
-	}
-	return prList, nil
+	return ch
 }
 
 // GetPullRequests combines GetPullRequestIDs & GetPullRequestInfoFromIDs into one call
@@ -309,6 +342,16 @@ func filterDiffErrors(err error) error {
 // GenerateDiffs ...
 func (c *CodeCommitClient) GenerateDiffs(repo string, diffOut []*codecommit.GetDifferencesOutput) []Result[[]byte] {
 	ctx := context.Background()
+	ch := c.GenerateDiffsConcurrently(ctx, repo, diffOut)
+	// Poll results
+	results := make([]Result[[]byte], 0, 10)
+	for res := range ch {
+		results = append(results, res)
+	}
+	return results
+}
+
+func (c *CodeCommitClient) GenerateDiffsConcurrently(ctx context.Context, repo string, diffOut []*codecommit.GetDifferencesOutput) <-chan Result[[]byte] {
 	wg := sync.WaitGroup{}
 	ch := make(chan Result[[]byte], runtime.NumCPU())
 	for _, do := range diffOut {
@@ -399,12 +442,8 @@ func (c *CodeCommitClient) GenerateDiffs(repo string, diffOut []*codecommit.GetD
 		defer close(ch)
 		wg.Wait()
 	}()
-	// Poll results
-	results := make([]Result[[]byte], 0, 10)
-	for res := range ch {
-		results = append(results, res)
-	}
-	return results
+
+	return ch
 }
 
 func newCodeCommitClient(profile string) (*codecommit.Client, error) {

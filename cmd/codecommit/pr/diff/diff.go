@@ -99,6 +99,10 @@ func runCmd(cmd *cobra.Command, args []string) {
 		prMap[s] = prs[i]
 	}
 
+	if len(li) == 0 {
+		util.ExitOnErr(fmt.Errorf("[%s] has no available PRs", cfg.Repository))
+	}
+
 	// Prompt for PRs to approve
 	prSelection, err := pterm.DefaultInteractiveSelect.
 		WithOptions(li).Show("Select PR to diff")
