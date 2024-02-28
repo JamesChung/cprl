@@ -455,7 +455,9 @@ func newCodeCommitClient(profile string) (*codecommit.Client, error) {
 		return nil, err
 	}
 
-	return codecommit.NewFromConfig(cfg), nil
+	return codecommit.NewFromConfig(cfg, func(o *codecommit.Options) {
+		o.RetryMaxAttempts = 1000
+	}), nil
 }
 
 func NewCodeCommitClient(profile string) (*CodeCommitClient, error) {

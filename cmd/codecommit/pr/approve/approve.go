@@ -57,7 +57,7 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
-func runCmd(cmd *cobra.Command, args []string) {
+func runCmd(cmd *cobra.Command, _ []string) {
 	cfg, err := config.NewCodeCommitConfig(cmd)
 	util.ExitOnErr(err)
 	repos, err := config.GetRepositories(cfg.Profile)

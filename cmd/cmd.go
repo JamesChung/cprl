@@ -40,7 +40,7 @@ func NewCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "cprl",
 		Short:   "cprl",
-		Version: "v0.0.0-beta",
+		Version: "v0.1.0",
 		Run: func(cmd *cobra.Command, args []string) {
 			val := os.Getenv("CPRL_DOCS")
 			if val != "" {

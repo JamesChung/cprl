@@ -4,7 +4,7 @@ build:
 
 .PHONY: test
 test:
-	go test -v
+	go test -v ./...
 
 .PHONY: release
 release:
@@ -13,7 +13,7 @@ release:
 
 .PHONY: tag
 tag: update docs
-	git tag -a v0.0.0-beta.$$(date +"%Y%m%d") -m v0.0.0-beta.$$(date +"%Y%m%d")
+	git tag -a v0.1.0 -m v0.1.0
 
 .PHONY: local
 local:
