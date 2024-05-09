@@ -9,7 +9,8 @@ builds:
       - linux
       - windows
       - darwin
-
+    ldflags:
+      - -X 'github.com/JamesChung/cprl/cmd.Version={{ .Version }}'
 archives:
   - format: tar.gz
     name_template: >-

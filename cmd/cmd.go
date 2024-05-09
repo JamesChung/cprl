@@ -36,11 +36,13 @@ func setPersistentFlags(flags *pflag.FlagSet) {
 	)
 }
 
+var Version = "develop"
+
 func NewCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "cprl",
 		Short:   "cprl",
-		Version: "v0.1.0",
+		Version: Version,
 		Run: func(cmd *cobra.Command, args []string) {
 			val := os.Getenv("CPRL_DOCS")
 			if val != "" {

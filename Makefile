@@ -13,7 +13,7 @@ release:
 
 .PHONY: tag
 tag: update docs
-	git tag -a v0.1.0 -m v0.1.0
+	git tag -a v0.1.1 -m v0.1.1
 
 .PHONY: local
 local:
