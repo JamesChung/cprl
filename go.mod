@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/codecommit v1.33.3
 	github.com/aws/aws-sdk-go-v2/service/iam v1.51.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.40.2
-	github.com/aws/smithy-go v1.23.2
+	github.com/aws/smithy-go v1.24.2
 	github.com/briandowns/spinner v1.23.2
 	github.com/pterm/pterm v0.12.82
 	github.com/spf13/cobra v1.10.1
@@ -27,7 +27,7 @@ require (
 	atomicgo.dev/schedule v0.1.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.3 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.8 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.24 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.13 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.13 // indirect
